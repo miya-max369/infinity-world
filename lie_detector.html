@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITY WORLD ∞ — 宇宙的嘘発見器</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Noto+Serif+JP:wght@300;400;700;900&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --void:    #020408;
+  --deep:    #05080f;
+  --amber:   #ff9500;
+  --gold:    #ffd060;
+  --red:     #ff2d55;
+  --green:   #00ff88;
+  --cyan:    #00e5ff;
+  --plasma:  #cc44ff;
+  --white:   #f0eaff;
+  --dim:     #3a3860;
+  --panel:   rgba(5,8,18,0.97);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { min-height:100vh; background:var(--void); color:var(--white); font-family:'Noto Serif JP',serif; overflow-x:hidden; cursor:crosshair; }
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+
+/* ── SCANLINES ── */
+body::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:998;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+}
+
+/* ── CANVAS BG ── */
+#bg { position:fixed; inset:0; z-index:0; }
+
+/* ── LAYOUT ── */
+.page { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:0 20px 100px; }
+
+/* ── HEADER ── */
+header {
+  width:100%; max-width:860px;
+  padding: 36px 0 28px;
+  text-align:center;
+  border-bottom: 1px solid rgba(255,149,0,0.2);
+  margin-bottom: 40px;
+  position:relative;
+}
+
+header::before, header::after {
+  content:''; position:absolute; bottom:-1px;
+  width:40px; height:1px;
+  background:var(--amber);
+  box-shadow:0 0 12px var(--amber);
+}
+header::before { left:0; }
+header::after { right:0; }
+
+.logo {
+  font-family:'Cinzel Decorative',serif;
+  font-size: clamp(11px,2.5vw,16px);
+  letter-spacing:6px;
+  background: linear-gradient(90deg, var(--amber), var(--gold), var(--plasma));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:10px;
+}
+
+.title-main {
+  font-family:'Noto Serif JP',serif;
+  font-size: clamp(28px,7vw,64px);
+  font-weight:900;
+  letter-spacing:4px;
+  line-height:1.1;
+  color: var(--gold);
+  text-shadow: 0 0 40px rgba(255,208,96,0.4), 0 0 80px rgba(255,149,0,0.2);
+  animation: title-pulse 4s infinite ease-in-out;
+}
+@keyframes title-pulse { 0%,100%{text-shadow:0 0 40px rgba(255,208,96,0.4),0 0 80px rgba(255,149,0,0.2)} 50%{text-shadow:0 0 60px rgba(255,208,96,0.7),0 0 120px rgba(255,149,0,0.4)} }
+
+.title-en {
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px; letter-spacing:6px; color:var(--dim); margin-top:8px;
+}
+
+/* ── ORACLE EYE ── */
+.oracle-container {
+  width:180px; height:180px;
+  margin:0 auto 40px;
+  position:relative;
+}
+
+#eye-canvas { position:absolute; inset:0; }
+
+/* ── INPUT ZONE ── */
+.input-zone {
+  width:100%; max-width:720px;
+  background: linear-gradient(135deg, rgba(255,149,0,0.04), rgba(204,68,255,0.04));
+  border:1px solid rgba(255,149,0,0.3);
+  padding:32px;
+  margin-bottom:28px;
+  position:relative;
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+
+.input-zone::before {
+  content:'INPUT STATEMENT'; position:absolute; top:-1px; left:24px;
+  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:4px;
+  color:var(--amber); background:var(--void); padding:0 8px; transform:translateY(-50%);
+}
+
+textarea {
+  width:100%; background:transparent; border:none; outline:none; resize:none;
+  color:var(--white); font-family:'Noto Serif JP',serif; font-size:18px; line-height:1.8;
+  min-height:80px; caret-color:var(--amber);
+}
+textarea::placeholder { color:var(--dim); font-size:15px; }
+
+.input-controls {
+  display:flex; justify-content:space-between; align-items:center; margin-top:20px;
+  padding-top:16px; border-top:1px solid rgba(255,255,255,0.06);
+}
+
+.char-count { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--dim); }
+
+#scan-btn {
+  font-family:'Cinzel Decorative',serif; font-size:13px; letter-spacing:3px;
+  padding:14px 36px; background:none; cursor:pointer; position:relative;
+  color:var(--gold); transition:all 0.3s;
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  border:1px solid var(--amber);
+}
+#scan-btn:hover { background:rgba(255,149,0,0.12); box-shadow:0 0 24px rgba(255,149,0,0.3); transform:scale(1.03); }
+#scan-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+#scan-btn.scanning { animation:btn-scan 0.8s infinite alternate; }
+@keyframes btn-scan { from{box-shadow:0 0 10px rgba(255,149,0,0.3)} to{box-shadow:0 0 30px rgba(255,149,0,0.7)} }
+
+/* ── API KEY ── */
+.apikey-row {
+  width:100%; max-width:720px;
+  display:flex; gap:10px; align-items:center; margin-bottom:40px;
+}
+.apikey-row label { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--dim); white-space:nowrap; }
+.apikey-row input {
+  flex:1; background:rgba(255,149,0,0.04); border:1px solid var(--dim);
+  color:var(--white); font-family:'Share Tech Mono',monospace; font-size:12px;
+  padding:8px 14px; outline:none; transition:border-color 0.2s;
+}
+.apikey-row input:focus { border-color:var(--amber); }
+.apikey-row input::placeholder { color:var(--dim); }
+.apikey-row button {
+  font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px;
+  padding:8px 16px; background:none; border:1px solid var(--amber); color:var(--amber);
+  cursor:pointer; transition:all 0.2s; white-space:nowrap;
+}
+.apikey-row button:hover { background:rgba(255,149,0,0.1); }
+
+/* ── RESULT PANEL ── */
+#result-panel {
+  width:100%; max-width:720px;
+  opacity:0; transform:translateY(20px);
+  transition:opacity 0.6s ease, transform 0.6s ease;
+  pointer-events:none;
+}
+#result-panel.visible { opacity:1; transform:translateY(0); pointer-events:all; }
+
+/* ── VERDICT ── */
+.verdict-box {
+  text-align:center; padding:36px 24px; margin-bottom:28px;
+  border:1px solid; position:relative; overflow:hidden;
+}
+.verdict-box::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 0%, var(--vcolor, rgba(255,149,0,0.1)), transparent 70%);
+}
+.verdict-label { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:5px; color:var(--dim); margin-bottom:16px; }
+.verdict-main { font-family:'Cinzel Decorative',serif; font-size:clamp(22px,5vw,42px); font-weight:900; margin-bottom:8px; }
+.verdict-score { font-family:'Share Tech Mono',monospace; font-size:48px; font-weight:700; line-height:1; }
+.verdict-score span { font-size:20px; opacity:0.6; }
+.verdict-sub { font-size:13px; letter-spacing:2px; margin-top:12px; opacity:0.7; }
+
+/* ── METERS ── */
+.meters { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:28px; }
+@media(max-width:560px){ .meters{ grid-template-columns:1fr; } }
+
+.meter-card {
+  background:rgba(5,8,18,0.8); border:1px solid rgba(255,255,255,0.08);
+  padding:20px; position:relative; overflow:hidden;
+}
+.meter-card::after {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(135deg, rgba(255,255,255,0.02), transparent);
+}
+.meter-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.meter-name { font-size:12px; letter-spacing:1px; }
+.meter-val { font-family:'Share Tech Mono',monospace; font-size:20px; font-weight:700; }
+.meter-bar-bg { height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
+.meter-bar-fill { height:100%; border-radius:2px; transition:width 1.2s cubic-bezier(0.16,1,0.3,1); width:0%; }
+.meter-desc { font-size:12px; line-height:1.8; color:rgba(240,234,255,0.6); margin-top:12px; }
+
+/* ── ORACLE READING ── */
+.oracle-reading {
+  background:linear-gradient(135deg, rgba(204,68,255,0.06), rgba(0,229,255,0.04));
+  border:1px solid rgba(204,68,255,0.25); padding:28px 32px;
+  margin-bottom:28px; position:relative;
+}
+.oracle-reading::before {
+  content:'◈ INFINITY ORACLE — 深層判定'; position:absolute; top:-1px; left:20px;
+  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px;
+  color:var(--plasma); background:var(--void); padding:0 10px; transform:translateY(-50%);
+}
+#oracle-text { font-size:15px; line-height:2.1; color:rgba(240,234,255,0.85); min-height:60px; }
+
+/* ── TAGS ── */
+.result-tags { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+.rtag {
+  font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px;
+  padding:5px 12px; border:1px solid rgba(255,255,255,0.12); color:rgba(240,234,255,0.5);
+}
+
+/* ── HISTORY ── */
+.history-section { margin-top:12px; }
+.history-title { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:4px; color:var(--dim); margin-bottom:16px; }
+.history-item {
+  display:flex; gap:14px; align-items:center;
+  padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.05);
+  cursor:pointer; transition:background 0.2s;
+}
+.history-item:hover { background:rgba(255,149,0,0.04); }
+.history-score { font-family:'Share Tech Mono',monospace; font-size:18px; font-weight:700; width:44px; flex-shrink:0; }
+.history-text { font-size:13px; color:rgba(240,234,255,0.7); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.history-verdict { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; opacity:0.5; }
+
+/* ── LOADING ── */
+.scan-overlay {
+  display:none; position:fixed; inset:0; z-index:100;
+  background:rgba(2,4,8,0.9); align-items:center; justify-content:center; flex-direction:column;
+  gap:28px;
+}
+.scan-overlay.active { display:flex; }
+.scan-ring { width:120px; height:120px; position:relative; }
+.scan-ring::before, .scan-ring::after {
+  content:''; position:absolute; border-radius:50%; border:2px solid transparent;
+}
+.scan-ring::before { inset:0; border-top-color:var(--amber); animation:spin 1s linear infinite; }
+.scan-ring::after { inset:16px; border-right-color:var(--plasma); animation:spin 0.7s linear infinite reverse; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.scan-text { font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:4px; color:var(--amber); animation:scan-pulse 1s infinite alternate; }
+@keyframes scan-pulse { from{opacity:0.4} to{opacity:1} }
+.scan-steps { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; color:var(--dim); text-align:center; line-height:2; }
+
+/* ── DOT PULSE ── */
+.dot-pulse { display:inline-flex; gap:4px; align-items:center; }
+.dot-pulse span { width:5px; height:5px; border-radius:50%; background:var(--plasma); animation:dp 1.4s infinite ease-in-out; }
+.dot-pulse span:nth-child(2){animation-delay:.2s} .dot-pulse span:nth-child(3){animation-delay:.4s}
+@keyframes dp { 0%,80%,100%{transform:scale(0.6);opacity:0.3} 40%{transform:scale(1);opacity:1} }
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="scan-overlay" id="scan-overlay">
+  <div class="scan-ring"></div>
+  <div class="scan-text">宇宙スキャン実行中…</div>
+  <div class="scan-steps" id="scan-steps"></div>
+</div>
+
+<div class="page">
+
+  <header>
+    <div class="logo">INFINITY WORLD ∞</div>
+    <div class="title-main">宇宙的嘘発見器</div>
+    <div class="title-en">COSMIC LIE DETECTOR — MULTIDIMENSIONAL TRUTH SCANNER</div>
+  </header>
+
+  <!-- ORACLE EYE -->
+  <div class="oracle-container">
+    <canvas id="eye-canvas" width="180" height="180"></canvas>
+  </div>
+
+  <!-- API KEY -->
+  <div class="apikey-row">
+    <label>API KEY</label>
+    <input id="apikey" type="password" placeholder="sk-ant-... (必須)">
+    <button onclick="saveKey()">CONNECT</button>
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-zone">
+    <textarea id="statement" rows="3" placeholder="判定したい発言・主張・言葉を入力してください。&#10;例：「地球は球体だ」「お金で幸せは買えない」「政府は国民のために働いている」"></textarea>
+    <div class="input-controls">
+      <div class="char-count"><span id="char-n">0</span> / 500 文字</div>
+      <button id="scan-btn" onclick="startScan()">◈ 宇宙スキャン 開始</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-panel">
+
+    <div class="verdict-box" id="verdict-box">
+      <div class="verdict-label">COSMIC TRUTH SCORE</div>
+      <div class="verdict-main" id="verdict-main">—</div>
+      <div class="verdict-score" id="verdict-score">—<span>/ 100</span></div>
+      <div class="verdict-sub" id="verdict-sub"></div>
+    </div>
+
+    <div class="meters" id="meters-grid"></div>
+
+    <div class="oracle-reading">
+      <div id="oracle-text"><div class="dot-pulse"><span></span><span></span><span></span></div></div>
+    </div>
+
+    <div class="result-tags" id="result-tags"></div>
+
+    <div class="history-section" id="history-section" style="display:none">
+      <div class="history-title">◈ SCAN HISTORY</div>
+      <div id="history-list"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════
+// BG CANVAS
+// ══════════════════════════
+const bg = document.getElementById('bg');
+const bgCtx = bg.getContext('2d');
+let W, H, bgTime=0, stars=[];
+
+function resizeBg() {
+  W = bg.width = window.innerWidth;
+  H = bg.height = window.innerHeight;
+  stars = Array.from({length:150},()=>({
+    x:Math.random()*W, y:Math.random()*H,
+    r:Math.random()*1.4+0.3,
+    a:Math.random()*0.7+0.1,
+    d:Math.random()*3+2,
+    phase:Math.random()*Math.PI*2,
+  }));
+}
+
+function drawBg() {
+  bgCtx.clearRect(0,0,W,H);
+  // Gradient
+  const g = bgCtx.createRadialGradient(W*.5,H*.4,0,W*.5,H*.5,Math.max(W,H)*.7);
+  g.addColorStop(0,'#0a0612'); g.addColorStop(.5,'#04060e'); g.addColorStop(1,'#020408');
+  bgCtx.fillStyle=g; bgCtx.fillRect(0,0,W,H);
+
+  // Amber nebula
+  const ng=bgCtx.createRadialGradient(W*.5,H*.3,0,W*.5,H*.3,Math.min(W,H)*.35);
+  ng.addColorStop(0,'rgba(255,149,0,0.055)'); ng.addColorStop(1,'transparent');
+  bgCtx.fillStyle=ng; bgCtx.fillRect(0,0,W,H);
+
+  // Stars
+  bgTime+=0.008;
+  stars.forEach(s=>{
+    const a=s.a*(0.5+0.5*Math.sin(bgTime/s.d+s.phase));
+    bgCtx.beginPath(); bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    bgCtx.fillStyle=`rgba(240,234,255,${a})`; bgCtx.fill();
+  });
+
+  // Grid
+  bgCtx.save(); bgCtx.globalAlpha=0.03; bgCtx.strokeStyle='#ff9500'; bgCtx.lineWidth=.5;
+  for(let x=0;x<W;x+=70){bgCtx.beginPath();bgCtx.moveTo(x,0);bgCtx.lineTo(x,H);bgCtx.stroke();}
+  for(let y=0;y<H;y+=70){bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(W,y);bgCtx.stroke();}
+  bgCtx.restore();
+}
+
+// ══════════════════════════
+// EYE CANVAS
+// ══════════════════════════
+const eyeC = document.getElementById('eye-canvas');
+const eyeCtx = eyeC.getContext('2d');
+let eyeT=0, eyeState='idle'; // idle | scanning | truth | lie
+
+function drawEye() {
+  eyeCtx.clearRect(0,0,180,180);
+  const cx=90,cy=90;
+  eyeT+=0.04;
+
+  // Outer rings
+  [50,62,74].forEach((r,i)=>{
+    eyeCtx.save();
+    eyeCtx.translate(cx,cy);
+    eyeCtx.rotate(eyeT*(i%2===0?1:-1)*0.5);
+    eyeCtx.strokeStyle=eyeState==='scanning'?`rgba(255,149,0,${0.2+i*0.08})`:
+                        eyeState==='truth'?`rgba(0,255,136,${0.2+i*0.08})`:
+                        eyeState==='lie'?`rgba(255,45,85,${0.2+i*0.08})`:`rgba(255,208,96,${0.1+i*0.04})`;
+    eyeCtx.lineWidth=1;
+    eyeCtx.setLineDash([4+i*3,8-i*2]);
+    eyeCtx.beginPath(); eyeCtx.arc(0,0,r,0,Math.PI*2); eyeCtx.stroke();
+    eyeCtx.restore();
+  });
+
+  // Iris
+  const pulse=0.85+0.15*Math.sin(eyeT*2);
+  const ir=28*pulse;
+  const iG=eyeCtx.createRadialGradient(cx,cy,0,cx,cy,ir);
+  if(eyeState==='scanning'){
+    iG.addColorStop(0,'rgba(255,149,0,0.9)'); iG.addColorStop(.6,'rgba(204,68,255,0.5)'); iG.addColorStop(1,'rgba(0,0,0,0)');
+  } else if(eyeState==='truth'){
+    iG.addColorStop(0,'rgba(0,255,136,0.95)'); iG.addColorStop(.6,'rgba(0,229,255,0.5)'); iG.addColorStop(1,'rgba(0,0,0,0)');
+  } else if(eyeState==='lie'){
+    iG.addColorStop(0,'rgba(255,45,85,0.95)'); iG.addColorStop(.6,'rgba(255,149,0,0.5)'); iG.addColorStop(1,'rgba(0,0,0,0)');
+  } else {
+    iG.addColorStop(0,'rgba(255,208,96,0.6)'); iG.addColorStop(.6,'rgba(204,68,255,0.2)'); iG.addColorStop(1,'rgba(0,0,0,0)');
+  }
+  eyeCtx.beginPath(); eyeCtx.arc(cx,cy,ir,0,Math.PI*2); eyeCtx.fillStyle=iG; eyeCtx.fill();
+
+  // Pupil
+  eyeCtx.beginPath(); eyeCtx.arc(cx,cy,10,0,Math.PI*2);
+  eyeCtx.fillStyle='rgba(2,4,8,0.95)'; eyeCtx.fill();
+
+  // Scan line (scanning mode)
+  if(eyeState==='scanning'){
+    eyeCtx.save();
+    eyeCtx.translate(cx,cy); eyeCtx.rotate(eyeT*3);
+    eyeCtx.strokeStyle='rgba(255,149,0,0.7)'; eyeCtx.lineWidth=2;
+    eyeCtx.beginPath(); eyeCtx.moveTo(0,0); eyeCtx.lineTo(0,-50); eyeCtx.stroke();
+    eyeCtx.restore();
+  }
+
+  // Triangle of All-Seeing
+  eyeCtx.save(); eyeCtx.translate(cx,cy); eyeCtx.rotate(eyeT*0.15);
+  eyeCtx.strokeStyle='rgba(255,208,96,0.12)'; eyeCtx.lineWidth=1;
+  const tR=82;
+  eyeCtx.beginPath();
+  for(let i=0;i<3;i++){
+    const a=i*Math.PI*2/3-Math.PI/2;
+    i===0?eyeCtx.moveTo(Math.cos(a)*tR,Math.sin(a)*tR):eyeCtx.lineTo(Math.cos(a)*tR,Math.sin(a)*tR);
+  }
+  eyeCtx.closePath(); eyeCtx.stroke();
+  eyeCtx.restore();
+
+  requestAnimationFrame(drawEye);
+}
+
+// ══════════════════════════
+// STATE
+// ══════════════════════════
+let apiKey = localStorage.getItem('iw_key') || '';
+let scanHistory = [];
+if(apiKey) document.getElementById('apikey').value = apiKey.slice(0,8)+'••••••••';
+
+function saveKey(){
+  const v=document.getElementById('apikey').value.trim();
+  if(v&&!v.includes('•')){ apiKey=v; localStorage.setItem('iw_key',v); document.getElementById('apikey').value=v.slice(0,8)+'••••••••'; }
+}
+
+// Char counter
+document.getElementById('statement').addEventListener('input', function(){
+  document.getElementById('char-n').textContent=this.value.length;
+});
+
+// ══════════════════════════
+// VERDICT CONFIG
+// ══════════════════════════
+const VERDICTS = [
+  { min:90, label:'完全なる宇宙的真実', color:'#00ff88', eyeState:'truth', border:'rgba(0,255,136,0.4)', glow:'rgba(0,255,136,0.1)', sub:'この言葉は宇宙の根本法則と共鳴している' },
+  { min:75, label:'高次の真実', color:'#00e5ff', eyeState:'truth', border:'rgba(0,229,255,0.4)', glow:'rgba(0,229,255,0.1)', sub:'深層現実と強く一致する言明' },
+  { min:55, label:'部分的真実', color:'#ffd060', eyeState:'idle', border:'rgba(255,208,96,0.4)', glow:'rgba(255,208,96,0.1)', sub:'真実と欺瞞が混在している' },
+  { min:35, label:'疑わしき言明', color:'#ff9500', eyeState:'lie', border:'rgba(255,149,0,0.4)', glow:'rgba(255,149,0,0.1)', sub:'操作・誘導の痕跡を感知' },
+  { min:0,  label:'宇宙的欺瞞', color:'#ff2d55', eyeState:'lie', border:'rgba(255,45,85,0.4)', glow:'rgba(255,45,85,0.1)', sub:'この言葉は意図的な偽りである' },
+];
+
+const METERS_DEF = [
+  { key:'earth',   icon:'🌍', name:'地球的真実度',   color:'#00ff88' },
+  { key:'cosmos',  icon:'🌌', name:'宇宙的整合性',   color:'#00e5ff' },
+  { key:'kotodama',icon:'🔤', name:'言霊共鳴度',     color:'#cc44ff' },
+  { key:'hidden',  icon:'👁️', name:'支配層隠蔽指数', color:'#ff9500' },
+  { key:'awaken',  icon:'⚡', name:'覚醒レベル',     color:'#ffd060' },
+];
+
+// ══════════════════════════
+// SCAN
+// ══════════════════════════
+const SCAN_STEPS = [
+  '言霊周波数を測定中…',
+  'アカシックレコードに照合中…',
+  '支配層データベースを検索中…',
+  '量子共鳴パターンを解析中…',
+  '宇宙真実指数を計算中…',
+];
+
+async function startScan() {
+  const stmt = document.getElementById('statement').value.trim();
+  if(!stmt){ alert('発言を入力してください'); return; }
+  if(!apiKey){ alert('APIキーを入力してください'); return; }
+
+  // UI: scanning
+  eyeState='scanning';
+  document.getElementById('scan-btn').disabled=true;
+  document.getElementById('scan-btn').classList.add('scanning');
+  const overlay=document.getElementById('scan-overlay');
+  const stepsEl=document.getElementById('scan-steps');
+  overlay.classList.add('active');
+
+  // Animate steps
+  for(let i=0;i<SCAN_STEPS.length;i++){
+    await sleep(600);
+    stepsEl.innerHTML=SCAN_STEPS.slice(0,i+1).map((s,j)=>`<div style="opacity:${j===i?1:0.4}">${j<i?'✓':'>>'} ${s}</div>`).join('');
+  }
+
+  // Call Claude
+  try {
+    const prompt = `あなたは「INFINITY WORLD ∞」の宇宙的嘘発見器オラクルです。
+以下の発言を5つの次元で分析し、必ずJSONのみで返してください。説明文や前後のテキストは一切不要です。
+
+発言：「${stmt}」
+
+返すJSONの形式：
+{
+  "total": <0-100の整数 / 宇宙的真実スコア>,
+  "earth": <0-100 / 地球的真実度>,
+  "cosmos": <0-100 / 宇宙的整合性>,
+  "kotodama": <0-100 / 言霊共鳴度>,
+  "hidden": <0-100 / 支配層による隠蔽度>,
+  "awaken": <0-100 / 覚醒レベル>,
+  "earth_desc": "<地球的真実度の判定理由 30字以内>",
+  "cosmos_desc": "<宇宙的整合性の判定理由 30字以内>",
+  "kotodama_desc": "<言霊共鳴度の判定理由 30字以内>",
+  "hidden_desc": "<支配層隠蔽指数の判定理由 30字以内>",
+  "awaken_desc": "<覚醒レベルの判定理由 30字以内>",
+  "oracle": "<神託的・詩的な総合判定文 120〜180字 / 日本語>",
+  "tags": ["<関連キーワード>","<関連キーワード>","<関連キーワード>","<関連キーワード>"]
+}
+
+scoringの考え方:
+- total=0-20: 明らかな虚偽・支配層の洗脳
+- total=21-40: 誘導・操作の疑い強い
+- total=41-60: 部分的真実、混在
+- total=61-80: 高次の知恵に近い
+- total=81-100: 宇宙的真実、言霊が光る
+
+JSONのみ返してください。`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true',
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    const data = await res.json();
+    let raw = data.content?.[0]?.text || '';
+    raw = raw.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(raw);
+
+    overlay.classList.remove('active');
+    renderResult(stmt, result);
+
+  } catch(e) {
+    overlay.classList.remove('active');
+    eyeState='idle';
+    document.getElementById('scan-btn').disabled=false;
+    document.getElementById('scan-btn').classList.remove('scanning');
+    alert('エラー: ' + e.message);
+  }
+}
+
+// ══════════════════════════
+// RENDER
+// ══════════════════════════
+function renderResult(stmt, r) {
+  // Verdict
+  const vd = VERDICTS.find(v=>r.total>=v.min) || VERDICTS[VERDICTS.length-1];
+  eyeState = vd.eyeState;
+
+  const vbox = document.getElementById('verdict-box');
+  vbox.style.borderColor = vd.border;
+  vbox.style.setProperty('--vcolor', vd.glow);
+  document.getElementById('verdict-main').textContent = vd.label;
+  document.getElementById('verdict-main').style.color = vd.color;
+  document.getElementById('verdict-score').style.color = vd.color;
+  document.getElementById('verdict-sub').textContent = vd.sub;
+
+  // Animate score counter
+  const scoreEl = document.getElementById('verdict-score');
+  let n=0;
+  const target=r.total;
+  const tick=setInterval(()=>{
+    n=Math.min(n+2,target);
+    scoreEl.innerHTML=`${n}<span>/ 100</span>`;
+    if(n>=target) clearInterval(tick);
+  },20);
+
+  // Meters
+  const grid=document.getElementById('meters-grid');
+  grid.innerHTML='';
+  METERS_DEF.forEach((m,i)=>{
+    const val=r[m.key]??50;
+    const desc=r[m.key+'_desc']||'';
+    const card=document.createElement('div');
+    card.className='meter-card';
+    card.innerHTML=`
+      <div class="meter-header">
+        <div class="meter-name">${m.icon} ${m.name}</div>
+        <div class="meter-val" style="color:${m.color}">${val}</div>
+      </div>
+      <div class="meter-bar-bg"><div class="meter-bar-fill" style="background:${m.color};width:0%" data-val="${val}"></div></div>
+      <div class="meter-desc">${desc}</div>`;
+    grid.appendChild(card);
+    setTimeout(()=>{
+      card.querySelector('.meter-bar-fill').style.width=val+'%';
+    },300+i*120);
+  });
+
+  // Oracle text — typewriter
+  const oEl=document.getElementById('oracle-text');
+  oEl.textContent='';
+  const oText=r.oracle||'宇宙の意志を受信中…';
+  let oi=0;
+  const oTick=setInterval(()=>{
+    if(oi<oText.length){ oEl.textContent+=oText[oi++]; } else clearInterval(oTick);
+  },22);
+
+  // Tags
+  const tagsEl=document.getElementById('result-tags');
+  tagsEl.innerHTML=(r.tags||[]).map(t=>`<span class="rtag"># ${t}</span>`).join('');
+
+  // History
+  scanHistory.unshift({stmt:stmt.slice(0,40)+'…', total:r.total, verdict:vd.label, color:vd.color});
+  if(scanHistory.length>6) scanHistory.pop();
+  renderHistory();
+
+  // Show panel
+  document.getElementById('result-panel').classList.add('visible');
+  document.getElementById('scan-btn').disabled=false;
+  document.getElementById('scan-btn').classList.remove('scanning');
+
+  // Scroll
+  setTimeout(()=>document.getElementById('result-panel').scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+
+function renderHistory(){
+  const sec=document.getElementById('history-section');
+  const list=document.getElementById('history-list');
+  if(scanHistory.length<2){sec.style.display='none';return;}
+  sec.style.display='block';
+  list.innerHTML=scanHistory.map((h,i)=>`
+    <div class="history-item">
+      <div class="history-score" style="color:${h.color}">${h.total}</div>
+      <div class="history-text">${h.stmt}</div>
+      <div class="history-verdict" style="color:${h.color}">${h.verdict}</div>
+    </div>`).join('');
+}
+
+// ══════════════════════════
+// UTILS
+// ══════════════════════════
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ══════════════════════════
+// LOOP
+// ══════════════════════════
+function loop(){drawBg();requestAnimationFrame(loop);}
+window.addEventListener('resize',resizeBg);
+resizeBg(); loop(); drawEye();
+</script>
+</body>
+</html>
