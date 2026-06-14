@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITY ∞ WORLD</title>
+<style>
+:root{
+  --void:#02040a;--electric:#00d4ff;--plasma:#bf00ff;
+  --gold:#ffd060;--rose:#ff6eb4;--jade:#00ffaa;
+  --sky:#7dd3fc;--lavender:#c4b5fd;--pale:#e0eeff;--white:#f0f4ff;--dim:#2a3a6a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--void);color:var(--white);font-family:serif;overflow-x:hidden;cursor:crosshair;}
+canvas#bg{position:fixed;inset:0;z-index:0;}
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;width:100%;}
+.hero-glow{position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(191,0,255,.1) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);animation:gp 6s ease-in-out infinite;pointer-events:none;}
+@keyframes gp{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6}50%{transform:translate(-50%,-50%) scale(1.3);opacity:1}}
+.inf{font-size:clamp(72px,18vw,160px);line-height:1;
+  background:linear-gradient(135deg,var(--sky),var(--lavender),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:inf-float 4s ease-in-out infinite;margin-bottom:8px;}
+@keyframes inf-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.hero-title{font-size:clamp(13px,3vw,20px);letter-spacing:10px;font-family:monospace;
+  background:linear-gradient(90deg,var(--gold),var(--sky));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:28px;animation:fu .8s .2s both;}
+@keyframes fu{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.hero-copy{max-width:560px;font-size:clamp(14px,2.5vw,18px);line-height:2.1;color:var(--pale);margin-bottom:56px;animation:fu .8s .4s both;}
+.hero-copy em{color:var(--sky);font-style:normal;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);font-family:monospace;font-size:10px;letter-spacing:4px;color:var(--dim);animation:blink 2s 2s infinite;pointer-events:none;white-space:nowrap;}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:.8}}
+
+/* MODULES */
+.modules{width:100%;max-width:1000px;padding:0 24px 100px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;animation:fu .8s .6s both;}
+.module-card{position:relative;padding:34px 26px;background:linear-gradient(135deg,rgba(255,255,255,.025),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.07);overflow:hidden;transition:all .35s;cursor:pointer;text-decoration:none;display:block;color:inherit;}
+.module-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--card-color,var(--sky)),transparent);opacity:0;transition:opacity .35s;}
+.module-card:hover{transform:translateY(-6px);border-color:var(--card-color,var(--sky));}
+.module-card:hover::before{opacity:.07;}
+.module-card::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,var(--card-color,var(--sky)),transparent 70%);opacity:.05;transition:opacity .35s;}
+.module-card:hover::after{opacity:.14;}
+.card-num{font-family:monospace;font-size:10px;letter-spacing:4px;color:var(--card-color,var(--sky));margin-bottom:14px;display:block;}
+.card-icon{font-size:38px;margin-bottom:14px;display:block;filter:drop-shadow(0 0 10px var(--card-color,var(--sky)));}
+.card-title{font-size:21px;font-weight:700;margin-bottom:8px;line-height:1.2;color:var(--pale);}
+.card-title-en{font-family:monospace;font-size:10px;letter-spacing:3px;color:var(--dim);margin-bottom:12px;display:block;}
+.card-desc{font-size:13px;line-height:1.9;color:rgba(224,238,255,.55);}
+.card-arrow{position:absolute;bottom:22px;right:22px;font-family:monospace;font-size:11px;letter-spacing:2px;color:var(--card-color,var(--sky));opacity:0;transition:opacity .25s,transform .25s;transform:translateX(-6px);}
+.module-card:hover .card-arrow{opacity:1;transform:translateX(0);}
+
+/* FOOTER */
+footer{width:100%;border-top:1px solid rgba(255,255,255,.05);padding:36px 24px;text-align:center;font-family:monospace;font-size:10px;letter-spacing:4px;color:var(--dim);}
+footer .sig{font-size:20px;letter-spacing:8px;color:var(--gold);margin-bottom:12px;font-family:serif;font-weight:700;}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="page">
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="inf">∞</div>
+    <div class="hero-title">INFINITY ∞ WORLD</div>
+    <p class="hero-copy">主流が見ない場所に、<em>真実</em>がある。<br>境界を越え、宇宙の隠された構造を探索する。<br>ここはフリンジ知識と意識の<em>交差点</em>。</p>
+    <div class="scroll-hint">↓ EXPLORE ↓</div>
+  </section>
+
+  <div class="modules">
+    <a href="fringe_map.html" class="module-card" style="--card-color:var(--sky)">
+      <span class="card-num">MODULE 01</span>
+      <span class="card-icon">🗺️</span>
+      <div class="card-title">フリンジ理論マップ</div>
+      <span class="card-title-en">FRINGE THEORY MAP</span>
+      <p class="card-desc">陰謀論・代替知識・禁断の宇宙観を星座のように可視化。20の理論ノードをタップしてフィッシュボーン深掘り探索。</p>
+      <span class="card-arrow">ENTER →</span>
+    </a>
+    <a href="lie_detector.html" class="module-card" style="--card-color:var(--gold)">
+      <span class="card-num">MODULE 02</span>
+      <span class="card-icon">👁️</span>
+      <div class="card-title">宇宙的嘘発見器</div>
+      <span class="card-title-en">COSMIC LIE DETECTOR</span>
+      <p class="card-desc">あらゆる発言を5次元でスキャン。地球的真実度・言霊共鳴度・支配層隠蔽指数など多角的に判定。結果をシェアできる。</p>
+      <span class="card-arrow">ENTER →</span>
+    </a>
+    <a href="cosmos_diagnosis.html" class="module-card" style="--card-color:var(--lavender)">
+      <span class="card-num">MODULE 03</span>
+      <span class="card-icon">🔮</span>
+      <div class="card-title">コスモス世界観診断</div>
+      <span class="card-title-en">COSMOS DIAGNOSIS</span>
+      <p class="card-desc">7つの問いに答えると、あなたの宇宙的アーキタイプが判明。星界の旅人から虚無の観測者まで8タイプ。結果画像を保存できる。</p>
+      <span class="card-arrow">ENTER →</span>
+    </a></div>
+
+  <footer>
+    <div class="sig">INFINITY ∞ WORLD</div>
+    境界の外側を、自由に探索する。<br><br>
+    <span style="color:var(--gold)">@miya</span> — Built with curiosity
+  </footer>
+</div>
+
+<script>
+const cv=document.getElementById('bg'),ctx=cv.getContext('2d');
+let W,H,t=0,stars=[];
+function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;
+  stars=Array.from({length:200},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.2,a:Math.random()*.8+.1,ph:Math.random()*Math.PI*2,sp:Math.random()*.015+.003}));}
+function draw(){ctx.clearRect(0,0,W,H);t+=.006;
+  const g=ctx.createRadialGradient(W*.5,H*.4,0,W*.5,H*.5,Math.max(W,H)*.75);
+  g.addColorStop(0,'#080318');g.addColorStop(.5,'#03060f');g.addColorStop(1,'#02040a');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  [[.2,.3,220,.065],[.75,.6,270,.05],[.5,.85,180,.04]].forEach(([nx,ny,h,a])=>{
+    const ng=ctx.createRadialGradient(W*nx,H*ny,0,W*nx,H*ny,Math.min(W,H)*.32);
+    ng.addColorStop(0,`hsla(${h},90%,55%,${a})`);ng.addColorStop(1,'transparent');
+    ctx.fillStyle=ng;ctx.fillRect(0,0,W,H);});
+  ctx.save();ctx.globalAlpha=.03;ctx.strokeStyle='#00d4ff';ctx.lineWidth=.5;
+  const gs=70;for(let x=0;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.restore();
+  stars.forEach(s=>{const tw=.35+.65*Math.sin(t/s.sp*s.sp*8+s.ph);ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(200,220,255,${s.a*tw})`;ctx.fill();});
+  requestAnimationFrame(draw);}
+window.addEventListener('resize',resize);resize();draw();
+</script>
+</body>
+</html>

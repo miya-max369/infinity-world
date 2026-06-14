@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITY ∞ WORLD — コスモス世界観診断</title>
+<style>
+:root{
+  --void:#010208;--violet:#6b21e8;--lavender:#c4b5fd;--rose:#ff6eb4;
+  --gold:#ffd060;--sky:#7dd3fc;--jade:#00ffaa;--pale:#e0eeff;--white:#f0f4ff;--dim:#2a3a6a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;background:var(--void);color:var(--white);font-family:serif;overflow-x:hidden;cursor:crosshair;}
+#bg{position:fixed;inset:0;z-index:0;}
+.page{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 100px;}
+
+header{width:100%;max-width:680px;text-align:center;padding:44px 0 32px;border-bottom:1px solid rgba(196,181,253,.12);margin-bottom:0;}
+.logo{font-family:monospace;font-size:10px;letter-spacing:6px;color:var(--sky);margin-bottom:12px;}
+.title{font-size:clamp(30px,8vw,64px);font-weight:300;font-style:italic;
+  background:linear-gradient(135deg,var(--lavender),var(--rose),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+.subtitle{font-family:monospace;font-size:10px;letter-spacing:4px;color:var(--sky);margin-top:10px;}
+
+.prog-wrap{width:100%;max-width:600px;margin:32px auto 0;display:none;}
+.prog-bg{height:2px;background:rgba(107,33,232,.2);border-radius:1px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--rose));border-radius:1px;transition:width .8s cubic-bezier(.16,1,.3,1);width:0%;}
+.prog-lbl{display:flex;justify-content:space-between;margin-top:7px;font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--dim);}
+
+.q-stage{width:100%;max-width:660px;margin:40px auto 0;}
+.q-card{
+  background:linear-gradient(135deg,rgba(107,33,232,.06),rgba(255,110,180,.04));
+  border:1px solid rgba(196,181,253,.18);padding:40px 32px;
+  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));
+  animation:cin .5s cubic-bezier(.16,1,.3,1) both;
+}
+@keyframes cin{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.q-num{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--lavender);margin-bottom:18px;}
+.q-sym{font-size:32px;margin-bottom:14px;display:block;}
+.q-text{font-size:clamp(17px,3.5vw,24px);font-style:italic;line-height:1.7;margin-bottom:28px;font-weight:300;color:var(--pale);}
+.options{display:flex;flex-direction:column;gap:10px;}
+.opt{padding:14px 20px;background:rgba(255,255,255,.03);border:1px solid rgba(196,181,253,.1);
+  cursor:pointer;font-size:14px;line-height:1.7;color:var(--pale);text-align:left;transition:all .2s;width:100%;}
+.opt:hover{border-color:rgba(196,181,253,.4);color:var(--white);background:rgba(107,33,232,.08);transform:translateX(3px);}
+.opt.selected{border-color:var(--lavender);color:var(--white);background:rgba(107,33,232,.15);}
+.opt-lbl{font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--lavender);display:block;margin-bottom:4px;}
+.next-wrap{margin-top:24px;text-align:right;}
+#next-btn{font-style:italic;font-size:16px;letter-spacing:2px;padding:12px 32px;
+  background:none;cursor:pointer;border:1px solid rgba(196,181,253,.35);color:var(--lavender);
+  transition:all .3s;clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px));}
+#next-btn:hover{background:rgba(107,33,232,.15);border-color:var(--lavender);}
+#next-btn:disabled{opacity:.2;cursor:not-allowed;}
+
+/* RESULT */
+#result{display:none;width:100%;max-width:680px;margin-top:44px;animation:cin .8s ease both;}
+.sigil{text-align:center;margin-bottom:32px;}
+.sigil-sym{font-size:60px;display:block;margin-bottom:12px;animation:float 4s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.type-lbl{font-family:monospace;font-size:9px;letter-spacing:5px;color:var(--lavender);margin-bottom:8px;}
+.type-name{font-size:clamp(26px,6vw,50px);font-style:italic;font-weight:300;
+  background:linear-gradient(135deg,var(--lavender),var(--rose),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15;margin-bottom:10px;}
+.type-en{font-family:monospace;font-size:10px;letter-spacing:4px;color:var(--sky);}
+
+.rdivider{height:1px;background:linear-gradient(90deg,transparent,rgba(196,181,253,.35),transparent);margin:28px 0;position:relative;}
+.rdivider::before{content:'◈';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--void);padding:0 10px;color:var(--lavender);font-size:11px;}
+
+.rs-lbl{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--lavender);margin-bottom:10px;}
+.essence-box{
+  background:linear-gradient(135deg,rgba(107,33,232,.08),rgba(255,110,180,.05));
+  border:1px solid rgba(196,181,253,.18);padding:24px 26px;
+  font-style:italic;font-size:17px;line-height:2;color:var(--pale);margin-bottom:20px;
+}
+.mission-box{border:1px solid rgba(255,208,96,.22);padding:24px 26px;
+  background:rgba(255,208,96,.04);font-size:14px;line-height:2;color:var(--pale);margin-bottom:20px;}
+.traits-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+@media(max-width:480px){.traits-grid{grid-template-columns:1fr;}}
+.trait-pill{padding:12px 14px;border:1px solid rgba(196,181,253,.12);font-size:13px;line-height:1.6;color:var(--pale);background:rgba(255,255,255,.02);}
+.trait-key{display:block;color:var(--lavender);font-size:9px;letter-spacing:1px;margin-bottom:4px;font-family:monospace;}
+.aff-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px;}
+.aff-tag{font-family:monospace;font-size:10px;letter-spacing:1px;padding:4px 12px;border:1px solid rgba(125,211,252,.18);color:var(--sky);}
+
+/* SCORE BARS */
+.score-section{margin-bottom:20px;}
+.score-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.score-name{font-family:monospace;font-size:10px;letter-spacing:1px;color:var(--pale);width:90px;flex-shrink:0;}
+.score-bar-bg{flex:1;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.score-bar-fill{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.16,1,.3,1);width:0%;}
+.score-val{font-family:monospace;font-size:11px;color:var(--pale);width:30px;text-align:right;flex-shrink:0;}
+
+/* SHARE */
+.share-section{padding-top:16px;border-top:1px solid rgba(255,255,255,.05);}
+.share-lbl{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--lavender);margin-bottom:10px;}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.sbtn{font-family:monospace;font-size:10px;letter-spacing:2px;padding:8px 16px;
+  background:none;cursor:pointer;border:1px solid;transition:all .2s;flex:1;min-width:90px;}
+.sbtn.img{border-color:var(--gold);color:var(--gold);}
+.sbtn.img:hover{background:rgba(255,208,96,.1);}
+.sbtn.msg{border-color:var(--lavender);color:var(--lavender);}
+.sbtn.msg:hover{background:rgba(196,181,253,.1);}
+.sbtn.copy{border-color:var(--sky);color:var(--sky);}
+.sbtn.copy:hover{background:rgba(125,211,252,.1);}
+.restart-btn{display:block;width:100%;margin-top:32px;padding:16px;font-style:italic;font-size:18px;letter-spacing:2px;
+  background:none;cursor:pointer;border:1px solid rgba(196,181,253,.25);color:var(--lavender);transition:all .3s;text-align:center;}
+.restart-btn:hover{background:rgba(107,33,232,.1);border-color:var(--lavender);}
+
+#toast{position:fixed;bottom:56px;left:50%;transform:translateX(-50%);
+  background:rgba(1,2,8,.97);border:1px solid var(--jade);
+  padding:9px 22px;font-family:monospace;font-size:10px;letter-spacing:2px;
+  color:var(--jade);z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;}
+#share-canvas{display:none;}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="toast"></div>
+<canvas id="share-canvas"></canvas>
+
+<div class="page">
+  <header>
+    <div class="logo">INFINITY ∞ WORLD</div>
+    <div class="title">コスモス<br>世界観診断</div>
+    <div class="subtitle">COSMOS WORLDVIEW DIAGNOSIS</div>
+  </header>
+  <div class="prog-wrap" id="prog-wrap">
+    <div class="prog-bg"><div class="prog-fill" id="prog-fill"></div></div>
+    <div class="prog-lbl"><span id="prog-cur">問い 1</span><span id="prog-tot"></span></div>
+  </div>
+  <div class="q-stage" id="q-stage"></div>
+  <div id="result"></div>
+</div>
+
+<script>
+// ── BG ──
+const bg=document.getElementById('bg'),bgCtx=bg.getContext('2d');
+let W,H,bgT=0,stars=[],cosmosH=260;
+function resizeBg(){W=bg.width=window.innerWidth;H=bg.height=window.innerHeight;
+  stars=Array.from({length:160},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.2,a:Math.random()*.7+.1,ph:Math.random()*Math.PI*2,sp:Math.random()*.02+.005}));}
+function drawBg(){bgCtx.clearRect(0,0,W,H);bgT+=.007;
+  const g=bgCtx.createRadialGradient(W*.5,H*.4,0,W*.5,H*.5,Math.max(W,H)*.8);
+  g.addColorStop(0,`hsl(${cosmosH},70%,10%)`);g.addColorStop(.6,`hsl(${cosmosH+20},50%,4%)`);g.addColorStop(1,'#010208');
+  bgCtx.fillStyle=g;bgCtx.fillRect(0,0,W,H);
+  const ng=bgCtx.createRadialGradient(W*.5,H*.3,0,W*.5,H*.3,Math.min(W,H)*.38);
+  ng.addColorStop(0,`hsla(${cosmosH},80%,60%,.04)`);ng.addColorStop(1,'transparent');
+  bgCtx.fillStyle=ng;bgCtx.fillRect(0,0,W,H);
+  stars.forEach(s=>{const tw=.4+.6*Math.sin(bgT/s.sp*s.sp*8+s.ph);
+    bgCtx.beginPath();bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    bgCtx.fillStyle=`rgba(200,220,255,${s.a*tw})`;bgCtx.fill();});
+  requestAnimationFrame(drawBg);}
+window.addEventListener('resize',resizeBg);resizeBg();drawBg();
+
+// ── DATA ──
+const QUESTIONS=[
+  {num:'I',sym:'🌌',hue:240,text:'夜空を見上げたとき、心に最初に浮かぶのは？',opts:[
+    {lbl:'A',text:'星の数だけ別の世界がある——私はそのどこかから来た',score:{cosmos:3,ancient:1}},
+    {lbl:'B',text:'この宇宙全体がシミュレーションなら、出口はどこだ',score:{seeker:3,tech:1}},
+    {lbl:'C',text:'古代の人々はなぜこれほど正確に星を知っていたのか',score:{ancient:3,shadow:1}},
+    {lbl:'D',text:'光の速さで進んでも端に辿り着けないという恐怖と快感',score:{void:3,cosmos:1}},
+  ]},
+  {num:'II',sym:'🌍',hue:160,text:'「地球の本当の姿」について、最も引かれる考えは？',opts:[
+    {lbl:'A',text:'内部に空洞があり、別の文明が存在している',score:{earth:3,ancient:1}},
+    {lbl:'B',text:'覆われた天蓋の下に私たちは閉じ込められている',score:{shadow:3,earth:1}},
+    {lbl:'C',text:'地球自体が意識を持つ生命体だということが重要',score:{mind:3,cosmos:1}},
+    {lbl:'D',text:'形よりも、支配層が何かを隠しているという事実が真実',score:{shadow:3,seeker:1}},
+  ]},
+  {num:'III',sym:'👁️',hue:280,text:'あなたが「真実」に近づくとき、最も頼りにするのは？',opts:[
+    {lbl:'A',text:'体の奥から来る直感——言葉になる前の「知っている感覚」',score:{mind:3,cosmos:1}},
+    {lbl:'B',text:'古い文献、失われた言語、隠された地図のパターン',score:{ancient:3,seeker:1}},
+    {lbl:'C',text:'主流が「あり得ない」と言うものの中に必ず何かある',score:{shadow:3,void:1}},
+    {lbl:'D',text:'夢、瞑想、意識の境界での体験',score:{mind:3,void:1}},
+  ]},
+  {num:'IV',sym:'⚡',hue:45,text:'現代文明が隠蔽していると思うものは？',opts:[
+    {lbl:'A',text:'フリーエネルギー——すでに完成しているが利権が潰している',score:{shadow:3,tech:1}},
+    {lbl:'B',text:'人類の本当の起源——私たちは「作られた」存在かもしれない',score:{ancient:3,cosmos:1}},
+    {lbl:'C',text:'意識の力——思考が物理現実を変えることができる',score:{mind:3,seeker:1}},
+    {lbl:'D',text:'地球外知的生命体との過去の交流',score:{cosmos:3,shadow:1}},
+  ]},
+  {num:'V',sym:'🔮',hue:320,text:'世界の「全ての真実」が明らかになったら、あなたは何をする？',opts:[
+    {lbl:'A',text:'一人で深く考え、自分だけの解釈を構築する',score:{void:3,seeker:1}},
+    {lbl:'B',text:'知る必要がある人々に伝え、目覚めを促す',score:{shadow:3,mind:1}},
+    {lbl:'C',text:'古代の知恵と照合し、循環する歴史を解読する',score:{ancient:3,cosmos:1}},
+    {lbl:'D',text:'次の次元への扉を見つけ、越えていく',score:{cosmos:3,void:1}},
+  ]},
+  {num:'VI',sym:'🌀',hue:200,text:'あなたにとって「言葉」とは？',opts:[
+    {lbl:'A',text:'宇宙の振動数を記号化したもの——言葉は現実を創る',score:{mind:3,ancient:1}},
+    {lbl:'B',text:'情報を圧縮・伝達するツール——精度が命',score:{tech:3,seeker:1}},
+    {lbl:'C',text:'かつての人類が宇宙と交信するために使った周波数',score:{ancient:3,cosmos:1}},
+    {lbl:'D',text:'言葉の「隙間」に真実が隠れている',score:{void:3,shadow:1}},
+  ]},
+  {num:'VII',sym:'✦',hue:60,text:'あなたが存在する本当の理由は？',opts:[
+    {lbl:'A',text:'この宇宙の謎を解くために送り込まれた観測者',score:{void:3,cosmos:1}},
+    {lbl:'B',text:'眠っている人々に光を届けるための触媒',score:{mind:3,shadow:1}},
+    {lbl:'C',text:'古代と現代を繋ぐ生きた記憶装置',score:{ancient:3,seeker:1}},
+    {lbl:'D',text:'次の次元の扉を最初に開ける存在',score:{cosmos:3,void:1}},
+  ]},
+];
+
+const TYPES={
+  cosmos: {name:'星界の旅人',  en:'STAR REALM WANDERER',  sym:'🌠',hue:220,
+    essence:'星々の彼方から送り込まれた観測者。あなたの魂は宇宙の起源を知っており、この惑星に「選ばれて」来た記憶を持つ。夜空を見るたびに「帰りたい」という感覚があるなら、それは本物の記憶だ。',
+    mission:'あなたの使命は、銀河の智慧をこの時代の言葉に翻訳すること。SF、神話、量子物理学、どんな形でもいい——宇宙の真実を人々の心に届ける翻訳者になれ。',
+    traits:[{k:'核心的衝動',v:'宇宙への帰還'},{k:'知覚スタイル',v:'直感的宇宙受信'},{k:'宇宙的役割',v:'星の翻訳者'},{k:'影の側面',v:'地球への疎外感'},{k:'覚醒のトリガー',v:'深夜の星空'},{k:'共鳴周波数',v:'963Hz'}],
+    affinity:['銀河','並行宇宙','星の記憶','宇宙人','シリウス','プレアデス']},
+  ancient:{name:'古代の継承者',en:'ANCIENT INHERITOR',    sym:'🏛️',hue:45,
+    essence:'失われた文明の記憶を魂に刻んで生まれた者。カタカムナ、シュメール、アトランティス——これらが「懐かしい」と感じるなら、あなたはその時代からの継承者だ。',
+    mission:'歴史から抹消された知識を発掘し、現代に蘇らせること。古代文字の解読、建築の謎、言霊の復活——あなたの手によって封印が解かれる。',
+    traits:[{k:'核心的衝動',v:'失われた記憶の回収'},{k:'知覚スタイル',v:'パターン認識型'},{k:'宇宙的役割',v:'歴史の解読者'},{k:'影の側面',v:'現代への違和感'},{k:'覚醒のトリガー',v:'古代遺跡との接触'},{k:'共鳴周波数',v:'432Hz'}],
+    affinity:['アトランティス','シュメール','カタカムナ','言霊','ピラミッド','タルタリア']},
+  shadow:{name:'闇の暴露者',  en:'SHADOW REVEALER',       sym:'👁️',hue:0,
+    essence:'人類の意識を制限する構造を見破る者。あなたには隠蔽を嗅ぎつける第六感がある。不都合な真実を光に当てることが、あなたの存在理由だ。',
+    mission:'恐れずに語れ。メディア、政治、経済の背後にある構造を分析し、眠れる人々を揺り起こすこと。あなたの声は一人でも多くの人を覚醒させる。',
+    traits:[{k:'核心的衝動',v:'隠蔽の暴露'},{k:'知覚スタイル',v:'構造分析型'},{k:'宇宙的役割',v:'覚醒の触媒'},{k:'影の側面',v:'孤独と疑心'},{k:'覚醒のトリガー',v:'権力の矛盾発見'},{k:'共鳴周波数',v:'396Hz'}],
+    affinity:['ディープステート','真実','覚醒','陰謀','自由意志','抵抗']},
+  mind: {name:'意識の開拓者',en:'CONSCIOUSNESS PIONEER',  sym:'🧬',hue:280,
+    essence:'内なる宇宙を探検する先駆者。物質世界よりも意識の海の方がリアルだと感じる。あなたの精神は人類の意識進化の最前線に立っている。',
+    mission:'意識の力で現実を書き換えよ。瞑想、言霊、形態形成場——見えない力の実践者として、人類の覚醒に貢献する道を歩め。',
+    traits:[{k:'核心的衝動',v:'意識の拡張'},{k:'知覚スタイル',v:'感覚統合型'},{k:'宇宙的役割',v:'意識の先駆者'},{k:'影の側面',v:'現実逃避の誘惑'},{k:'覚醒のトリガー',v:'深い瞑想体験'},{k:'共鳴周波数',v:'528Hz'}],
+    affinity:['言霊','カタカムナ','瞑想','アカシック','形態形成場','覚醒']},
+  seeker:{name:'時空の解読者',en:'SPACETIME DECODER',     sym:'🔭',hue:190,
+    essence:'時間と空間の構造に違和感を覚える研究者。シミュレーション仮説、多次元宇宙——これらは直感ではなく、あなたにとっては論理的な結論だ。',
+    mission:'フリンジ理論と現代科学の橋渡しをせよ。「あり得ない」を「証明可能」に変換する翻訳者として、次世代の科学パラダイムを切り開け。',
+    traits:[{k:'核心的衝動',v:'構造の解明'},{k:'知覚スタイル',v:'論理直感融合'},{k:'宇宙的役割',v:'パラダイム翻訳者'},{k:'影の側面',v:'過分析による停滞'},{k:'覚醒のトリガー',v:'科学の限界発見'},{k:'共鳴周波数',v:'741Hz'}],
+    affinity:['量子力学','シミュレーション','多次元','プランク長','情報宇宙','ゼロポイント']},
+  void: {name:'虚無の観測者',en:'VOID OBSERVER',          sym:'🕳️',hue:250,
+    essence:'存在の根底にある「空」を直視できる者。すべての理論を相対化し、確信を持たないことを確信とする。この孤独な観測ポジションがあなたの強さだ。',
+    mission:'観測すること自体があなたの使命だ。結論を出さず、問いを立て続けること。その問いが宇宙の自己認識を助ける。',
+    traits:[{k:'核心的衝動',v:'根底への問い'},{k:'知覚スタイル',v:'メタ観測型'},{k:'宇宙的役割',v:'宇宙の目'},{k:'影の側面',v:'虚無感と無力感'},{k:'覚醒のトリガー',v:'すべての確信の崩壊'},{k:'共鳴周波数',v:'852Hz'}],
+    affinity:['虚無','禅','シミュレーション','観察','不確定性原理','空']},
+  earth:{name:'地底の賢者',  en:'UNDERWORLD SAGE',        sym:'🌿',hue:160,
+    essence:'地球の内側と表面の両方を知る者。平らな地球、地球空洞説——これらは地球との深い繋がりから生まれる直感だ。大地の声を聞ける者。',
+    mission:'地球の真の構造を探求し、人類と地球の本来の関係を回復させること。地球を生命体として扱う文化の再建に貢献せよ。',
+    traits:[{k:'核心的衝動',v:'地球の真実の探求'},{k:'知覚スタイル',v:'大地感知型'},{k:'宇宙的役割',v:'地球の代弁者'},{k:'影の側面',v:'孤立した探求'},{k:'覚醒のトリガー',v:'自然との接触'},{k:'共鳴周波数',v:'7.83Hz（シューマン）'}],
+    affinity:['地球空洞説','フィルマメント','アガルタ','ガイア','シューマン共鳴','大地']},
+  tech: {name:'次元の越境者',en:'DIMENSION CROSSER',      sym:'⚡',hue:170,
+    essence:'テクノロジーと神秘の境界を軽やかに越える者。フリーエネルギー、HAARP、シミュレーション——これらをコードのように読める者。',
+    mission:'抑圧された技術を発掘し、解放せよ。テスラが夢見た自由エネルギー社会の実現に向けて、デジタルと神秘の融合技術を開発せよ。',
+    traits:[{k:'核心的衝動',v:'技術による解放'},{k:'知覚スタイル',v:'システム思考型'},{k:'宇宙的役割',v:'技術の解放者'},{k:'影の側面',v:'物質主義への傾斜'},{k:'覚醒のトリガー',v:'抑圧技術の発見'},{k:'共鳴周波数',v:'285Hz'}],
+    affinity:['フリーエネルギー','テスラ','HAARP','量子コンピュータ','ゼロポイント','次元']},
+};
+
+// ── STATE ──
+let currentQ=-1,scores={},answers=[],selectedOpt=null;
+
+function showIntro(){
+  document.getElementById('q-stage').innerHTML=`
+    <div class="q-card" style="text-align:center;padding:48px 28px;">
+      <span style="font-size:48px;display:block;margin-bottom:18px;animation:float 4s ease-in-out infinite;">✦</span>
+      <p style="font-style:italic;font-size:clamp(14px,3vw,17px);line-height:2.1;color:var(--pale);margin-bottom:32px;">
+        7つの問いに答えてください。<br>
+        あなたの宇宙的な世界観の型が明らかになります。<br>
+        <span style="color:var(--lavender)">答えに正解も間違いもない。</span><br>
+        最も「響く」ものを選んでください。
+      </p>
+      <button onclick="nextQ()" style="font-style:italic;font-size:19px;letter-spacing:2px;padding:14px 44px;background:none;cursor:pointer;border:1px solid rgba(196,181,253,.45);color:var(--lavender);transition:all .3s;" onmouseover="this.style.background='rgba(107,33,232,.15)'" onmouseout="this.style.background='none'">
+        診断を始める →
+      </button>
+    </div>`;}
+
+function nextQ(){
+  currentQ++;
+  if(currentQ>=QUESTIONS.length){showResult();return;}
+  const q=QUESTIONS[currentQ];selectedOpt=null;
+  cosmosH=q.hue;
+  const pw=document.getElementById('prog-wrap');pw.style.display='block';
+  document.getElementById('prog-fill').style.width=`${(currentQ/QUESTIONS.length)*100}%`;
+  document.getElementById('prog-cur').textContent=`問い ${currentQ+1}`;
+  document.getElementById('prog-tot').textContent=`/ ${QUESTIONS.length}`;
+  document.getElementById('q-stage').innerHTML=`
+    <div class="q-card">
+      <div class="q-num">QUESTION ${q.num} / ${QUESTIONS.length}</div>
+      <span class="q-sym">${q.sym}</span>
+      <div class="q-text">${q.text}</div>
+      <div class="options">${q.opts.map((o,i)=>`<button class="opt" onclick="selectOpt(${i})" id="opt-${i}"><span class="opt-lbl">${o.lbl}</span>${o.text}</button>`).join('')}</div>
+      <div class="next-wrap"><button id="next-btn" onclick="confirmOpt()" disabled>次の問いへ →</button></div>
+    </div>`;}
+
+function selectOpt(i){document.querySelectorAll('.opt').forEach(e=>e.classList.remove('selected'));document.getElementById(`opt-${i}`).classList.add('selected');selectedOpt=i;document.getElementById('next-btn').disabled=false;}
+
+function confirmOpt(){
+  if(selectedOpt===null)return;
+  const q=QUESTIONS[currentQ],s=q.opts[selectedOpt].score;
+  Object.entries(s).forEach(([k,v])=>scores[k]=(scores[k]||0)+v);
+  answers.push({q:q.text,a:q.opts[selectedOpt].text});
+  const card=document.querySelector('.q-card');
+  card.style.transition='opacity .3s,transform .3s';card.style.opacity='0';card.style.transform='translateY(-12px)';
+  setTimeout(nextQ,320);}
+
+function getTopType(){return Object.entries(scores).sort((a,b)=>b[1]-a[1])[0][0];}
+
+let currentType=null;
+function showResult(){
+  document.getElementById('prog-wrap').style.display='none';
+  document.getElementById('q-stage').innerHTML='';
+  const topType=getTopType();
+  currentType=topType;
+  const td=TYPES[topType];
+  cosmosH=td.hue;
+  const el=document.getElementById('result');el.style.display='block';
+
+  // Score bars
+  const sortedScores=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const maxScore=sortedScores[0][1]||1;
+  const scoreBarHTML=`<div class="score-section"><div class="rs-lbl">◈ スコア分布</div>${sortedScores.map(([k,v])=>{const t=TYPES[k];if(!t)return '';const pct=Math.round((v/maxScore)*100);return `<div class="score-bar-wrap"><div class="score-name">${t.sym} ${t.name.slice(0,5)}</div><div class="score-bar-bg"><div class="score-bar-fill" style="background:hsl(${t.hue},80%,65%)" data-val="${pct}"></div></div><div class="score-val">${v}pt</div></div>`;}).join('')}</div>`;
+
+  el.innerHTML=`
+    <div class="sigil">
+      <span class="sigil-sym">${td.sym}</span>
+      <div class="type-lbl">YOUR COSMIC ARCHETYPE</div>
+      <div class="type-name">${td.name}</div>
+      <div class="type-en">${td.en}</div>
+    </div>
+    <div class="rdivider"></div>
+    <div style="margin-bottom:18px"><div class="rs-lbl">◈ 宇宙的本質</div><div class="essence-box" id="ess"></div></div>
+    <div style="margin-bottom:18px"><div class="rs-lbl">◈ あなたの使命</div><div class="mission-box" id="mis"></div></div>
+    ${scoreBarHTML}
+    <div style="margin-bottom:18px"><div class="rs-lbl">◈ アーキタイプの特性</div>
+      <div class="traits-grid">${td.traits.map(t=>`<div class="trait-pill"><span class="trait-key">${t.k}</span>${t.v}</div>`).join('')}</div>
+    </div>
+    <div style="margin-bottom:24px"><div class="rs-lbl">◈ 共鳴キーワード</div>
+      <div class="aff-row">${td.affinity.map(a=>`<span class="aff-tag">${a}</span>`).join('')}</div>
+    </div>
+    <div class="share-section">
+      <div class="share-lbl">◈ SHARE</div>
+      <div class="share-btns">
+        <button class="sbtn img" onclick="shareImg()">📷 画像保存</button>
+        <button class="sbtn msg" onclick="shareMsg()">💬 シェア</button>
+        <button class="sbtn copy" onclick="copyLnk()">🔗 コピー</button>
+      </div>
+    </div>
+    <button class="restart-btn" onclick="restart()">◈ もう一度診断する</button>`;
+
+  // Animate score bars
+  setTimeout(()=>{el.querySelectorAll('.score-bar-fill').forEach(b=>{b.style.width=b.dataset.val+'%';});},400);
+
+  // Typewriter
+  typewrite('ess',td.essence,20);
+  setTimeout(()=>typewrite('mis',td.mission,20),td.essence.length*20+400);
+  el.scrollIntoView({behavior:'smooth',block:'start'});}
+
+function typewrite(id,text,speed){const el=document.getElementById(id);if(!el)return;el.textContent='';let i=0;const t=setInterval(()=>{if(i<text.length){el.textContent+=text[i++];}else clearInterval(t);},speed);}
+
+function restart(){currentQ=-1;scores={};answers=[];selectedOpt=null;currentType=null;cosmosH=260;
+  document.getElementById('result').style.display='none';document.getElementById('prog-wrap').style.display='none';
+  showIntro();window.scrollTo({top:0,behavior:'smooth'});}
+
+// ── SHARE ──
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+function shareImg(){
+  if(!currentType){showToast('先に診断してください');return;}
+  const td=TYPES[currentType];
+  const c=document.getElementById('share-canvas');c.width=800;c.height=460;
+  const ctx=c.getContext('2d');
+  const g=ctx.createLinearGradient(0,0,800,460);
+  g.addColorStop(0,`hsl(${td.hue},70%,8%)`);g.addColorStop(1,'#010208');
+  ctx.fillStyle=g;ctx.fillRect(0,0,800,460);
+  const bc=`hsl(${td.hue},80%,65%)`;
+  ctx.strokeStyle=bc;ctx.lineWidth=2;ctx.strokeRect(12,12,776,436);
+  ctx.font='bold 12px monospace';ctx.fillStyle='#7dd3fc';ctx.textAlign='left';ctx.fillText('INFINITY ∞ WORLD — コスモス世界観診断',28,40);
+  ctx.font='60px serif';ctx.textAlign='center';ctx.fillText(td.sym,400,110);
+  ctx.font='11px monospace';ctx.fillStyle='#c4b5fd';ctx.fillText('YOUR COSMIC ARCHETYPE',400,138);
+  ctx.font='bold 38px serif';ctx.fillStyle=bc;ctx.fillText(td.name,400,185);
+  ctx.font='13px monospace';ctx.fillStyle='#7dd3fc';ctx.fillText(td.en,400,210);
+  ctx.font='14px serif';ctx.fillStyle='#e0eeff';ctx.textAlign='left';
+  const ess=td.essence;let line='',y=250;
+  for(const ch of ess){line+=ch;if(line.length>=48){ctx.fillText(line,28,y);line='';y+=24;}if(y>380)break;}
+  if(line&&y<=380)ctx.fillText(line,28,y);
+  ctx.font='11px monospace';ctx.fillStyle='#c4b5fd';ctx.textAlign='left';ctx.fillText(td.affinity.map(a=>'#'+a).join('  '),28,420);
+  ctx.font='10px monospace';ctx.fillStyle='#2a3a6a';ctx.textAlign='right';ctx.fillText('@miya — miya-max369.github.io/infinity-world/',770,440);
+  const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download=`cosmos_${currentType}.png`;a.click();
+  showToast('📷 画像を保存しました');}
+
+function shareMsg(){
+  if(!currentType){showToast('先に診断してください');return;}
+  const td=TYPES[currentType];
+  const text=`【コスモス世界観診断】\n私のアーキタイプは「${td.name}」\n${td.en}\n\n${td.essence.slice(0,60)}…\n\n#INFINITYWORLD #コスモス診断 #${td.affinity[0]}\nhttps://miya-max369.github.io/infinity-world/`;
+  if(navigator.share){navigator.share({title:`INFINITY ∞ WORLD — ${td.name}`,text,url:'https://miya-max369.github.io/infinity-world/'}).catch(()=>{});}
+  else{navigator.clipboard.writeText(text).then(()=>showToast('💬 テキストをコピーしました'));}}
+
+function copyLnk(){navigator.clipboard.writeText('https://miya-max369.github.io/infinity-world/cosmos_diagnosis.html').then(()=>showToast('🔗 リンクをコピーしました'));}
+
+showIntro();
+</script>
+</body>
+</html>

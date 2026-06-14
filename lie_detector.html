@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITY ∞ WORLD — 宇宙的嘘発見器</title>
+<style>
+:root {
+  --void: #020408;
+  --amber: #ff9500;
+  --gold: #ffd060;
+  --sky: #7dd3fc;
+  --lavender: #c4b5fd;
+  --jade: #00ffaa;
+  --rose: #ff6eb4;
+  --pale: #e0eeff;
+  --white: #f0f4ff;
+  --dim: #2a3a6a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{min-height:100vh;background:var(--void);color:var(--white);font-family:serif;overflow-x:hidden;cursor:crosshair;}
+#bg{position:fixed;inset:0;z-index:0;}
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 100px;}
+
+/* HEADER */
+header{width:100%;max-width:700px;text-align:center;padding:40px 0 28px;border-bottom:1px solid rgba(255,149,0,.15);margin-bottom:0;}
+.logo{font-family:monospace;font-size:10px;letter-spacing:6px;color:var(--sky);margin-bottom:12px;}
+.title{font-size:clamp(28px,7vw,60px);font-weight:900;line-height:1.1;color:var(--gold);
+  text-shadow:0 0 40px rgba(255,208,96,.4);animation:tpulse 4s infinite ease-in-out;}
+@keyframes tpulse{0%,100%{text-shadow:0 0 40px rgba(255,208,96,.4)}50%{text-shadow:0 0 70px rgba(255,208,96,.7)}}
+.subtitle{font-family:monospace;font-size:10px;letter-spacing:5px;color:var(--sky);margin-top:10px;}
+
+/* EYE */
+.eye-wrap{width:160px;height:160px;margin:36px auto;position:relative;}
+#eye{position:absolute;inset:0;}
+
+/* INPUT */
+.input-zone{
+  width:100%;max-width:680px;
+  background:linear-gradient(135deg,rgba(255,149,0,.04),rgba(196,181,253,.04));
+  border:1px solid rgba(255,149,0,.25);padding:28px;margin-top:32px;
+  clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px));
+  position:relative;
+}
+.input-zone::before{
+  content:'INPUT STATEMENT';position:absolute;top:-1px;left:20px;
+  font-family:monospace;font-size:9px;letter-spacing:4px;
+  color:var(--amber);background:var(--void);padding:0 8px;transform:translateY(-50%);
+}
+textarea{
+  width:100%;background:transparent;border:none;outline:none;resize:none;
+  color:var(--pale);font-family:serif;font-size:17px;line-height:1.8;
+  min-height:80px;caret-color:var(--amber);
+}
+textarea::placeholder{color:var(--dim);font-size:14px;}
+.input-ctrl{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.05);}
+.char-count{font-family:monospace;font-size:10px;color:var(--dim);}
+
+/* EXAMPLES */
+.examples{width:100%;max-width:680px;margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;}
+.ex-btn{
+  font-family:monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;
+  background:rgba(125,211,252,.05);border:1px solid rgba(125,211,252,.2);
+  color:var(--sky);cursor:pointer;transition:all .2s;
+}
+.ex-btn:hover{background:rgba(125,211,252,.12);border-color:var(--sky);}
+
+#scan-btn{
+  font-family:monospace;font-size:12px;letter-spacing:3px;padding:12px 32px;
+  background:none;cursor:pointer;border:1px solid var(--amber);color:var(--gold);
+  clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);
+  transition:all .3s;
+}
+#scan-btn:hover{background:rgba(255,149,0,.12);box-shadow:0 0 20px rgba(255,149,0,.3);}
+#scan-btn:disabled{opacity:.3;cursor:not-allowed;}
+#scan-btn.scanning{animation:sblink .7s infinite alternate;}
+@keyframes sblink{from{box-shadow:0 0 8px rgba(255,149,0,.3)}to{box-shadow:0 0 28px rgba(255,149,0,.7)}}
+
+/* LOADING */
+#loading{display:none;position:fixed;inset:0;z-index:100;background:rgba(2,4,8,.95);
+  align-items:center;justify-content:center;flex-direction:column;gap:24px;}
+#loading.active{display:flex;}
+.load-ring{width:90px;height:90px;position:relative;}
+.load-ring::before,.load-ring::after{content:'';position:absolute;border-radius:50%;border:1px solid transparent;}
+.load-ring::before{inset:0;border-top-color:var(--amber);border-right-color:var(--amber);animation:spin 1.8s linear infinite;}
+.load-ring::after{inset:16px;border-bottom-color:var(--lavender);border-left-color:var(--lavender);animation:spin 1.2s linear infinite reverse;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-family:monospace;font-size:11px;letter-spacing:4px;color:var(--amber);animation:fp 1.5s infinite;}
+.load-steps{font-family:monospace;font-size:10px;letter-spacing:2px;color:var(--dim);text-align:center;line-height:2.2;}
+@keyframes fp{0%,100%{opacity:.4}50%{opacity:1}}
+
+/* RESULT */
+#result{width:100%;max-width:680px;margin-top:36px;opacity:0;transform:translateY(20px);
+  transition:opacity .6s,transform .6s;pointer-events:none;}
+#result.visible{opacity:1;transform:translateY(0);pointer-events:all;}
+
+/* VERDICT */
+.verdict-box{text-align:center;padding:32px 20px;margin-bottom:24px;border:1px solid;position:relative;overflow:hidden;}
+.verdict-box::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--vg,rgba(255,208,96,.08)),transparent 70%);}
+.v-label{font-family:monospace;font-size:9px;letter-spacing:5px;color:var(--sky);margin-bottom:14px;}
+.v-main{font-family:monospace;font-size:clamp(18px,4vw,32px);font-weight:700;margin-bottom:8px;}
+.v-score{font-family:monospace;font-size:44px;font-weight:700;line-height:1;}
+.v-score span{font-size:18px;opacity:.6;}
+.v-sub{font-size:13px;letter-spacing:1px;margin-top:10px;color:var(--pale);}
+
+/* METERS */
+.meters{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+@media(max-width:520px){.meters{grid-template-columns:1fr;}}
+.meter-card{background:rgba(5,8,18,.8);border:1px solid rgba(255,255,255,.07);padding:18px;}
+.m-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.m-name{font-size:12px;color:var(--pale);}
+.m-val{font-family:monospace;font-size:20px;font-weight:700;}
+.m-bar-bg{height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.m-bar-fill{height:100%;border-radius:2px;transition:width 1.2s cubic-bezier(.16,1,.3,1);width:0%;}
+.m-desc{font-size:11px;line-height:1.8;color:var(--sky);margin-top:10px;}
+
+/* ORACLE */
+.oracle-box{
+  background:linear-gradient(135deg,rgba(196,181,253,.06),rgba(0,212,255,.04));
+  border:1px solid rgba(196,181,253,.2);padding:24px 28px;margin-bottom:24px;position:relative;
+}
+.oracle-box::before{content:'◈ ORACLE — 深層判定';position:absolute;top:-1px;left:16px;
+  font-family:monospace;font-size:9px;letter-spacing:3px;color:var(--lavender);
+  background:var(--void);padding:0 8px;transform:translateY(-50%);}
+#oracle-txt{font-size:14px;line-height:2;color:var(--pale);}
+
+/* KEYWORDS */
+.kw-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;}
+.kw{font-family:monospace;font-size:10px;letter-spacing:1px;padding:4px 10px;
+  border:1px solid rgba(125,211,252,.2);color:var(--sky);}
+
+/* SHARE */
+.share-section{padding-top:16px;border-top:1px solid rgba(255,255,255,.06);}
+.share-lbl{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--lavender);margin-bottom:10px;}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.sbtn{font-family:monospace;font-size:10px;letter-spacing:2px;padding:8px 16px;
+  background:none;cursor:pointer;border:1px solid;transition:all .2s;flex:1;min-width:90px;}
+.sbtn.img{border-color:var(--gold);color:var(--gold);}
+.sbtn.img:hover{background:rgba(255,208,96,.1);}
+.sbtn.msg{border-color:var(--lavender);color:var(--lavender);}
+.sbtn.msg:hover{background:rgba(196,181,253,.1);}
+.sbtn.copy{border-color:var(--sky);color:var(--sky);}
+.sbtn.copy:hover{background:rgba(125,211,252,.1);}
+
+/* HISTORY */
+.history{margin-top:24px;}
+.h-lbl{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--dim);margin-bottom:12px;}
+.h-item{display:flex;gap:12px;align-items:center;padding:10px 14px;
+  border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .2s;}
+.h-item:hover{background:rgba(255,149,0,.04);}
+.h-score{font-family:monospace;font-size:18px;font-weight:700;width:40px;flex-shrink:0;}
+.h-text{font-size:12px;color:var(--pale);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.h-verdict{font-family:monospace;font-size:9px;letter-spacing:1px;opacity:.5;}
+
+/* TOAST */
+#toast{position:fixed;bottom:56px;left:50%;transform:translateX(-50%);
+  background:rgba(2,4,8,.97);border:1px solid var(--jade);
+  padding:9px 22px;font-family:monospace;font-size:10px;letter-spacing:2px;
+  color:var(--jade);z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;}
+#share-canvas{display:none;}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="loading">
+  <div class="load-ring"></div>
+  <div class="load-txt">宇宙スキャン実行中…</div>
+  <div class="load-steps" id="load-steps"></div>
+</div>
+<div id="toast"></div>
+<canvas id="share-canvas"></canvas>
+
+<div class="page">
+  <header>
+    <div class="logo">INFINITY ∞ WORLD</div>
+    <div class="title">宇宙的嘘発見器</div>
+    <div class="subtitle">COSMIC LIE DETECTOR — MULTIDIMENSIONAL TRUTH SCANNER</div>
+  </header>
+
+  <div class="eye-wrap"><canvas id="eye" width="160" height="160"></canvas></div>
+
+  <div class="input-zone">
+    <textarea id="stmt" rows="3" placeholder="判定したい発言・言葉を入力&#10;例：「政府は国民のために働いている」「お金で幸せは買えない」"></textarea>
+    <div class="input-ctrl">
+      <div class="char-count"><span id="cn">0</span>/500</div>
+      <button id="scan-btn" onclick="startScan()">◈ 宇宙スキャン</button>
+    </div>
+  </div>
+
+  <div class="examples">
+    <span style="font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--dim);align-self:center;">例文:</span>
+    <button class="ex-btn" onclick="setEx('地球は球体だ')">地球は球体だ</button>
+    <button class="ex-btn" onclick="setEx('政府は国民のために働いている')">政府は国民のために</button>
+    <button class="ex-btn" onclick="setEx('お金で幸せは買えない')">お金で幸せは買えない</button>
+    <button class="ex-btn" onclick="setEx('歴史は勝者が書く')">歴史は勝者が書く</button>
+    <button class="ex-btn" onclick="setEx('宇宙人は存在する')">宇宙人は存在する</button>
+  </div>
+
+  <div id="result">
+    <div class="verdict-box" id="vbox">
+      <div class="v-label">COSMIC TRUTH SCORE</div>
+      <div class="v-main" id="vmain">—</div>
+      <div class="v-score" id="vscore">—<span>/100</span></div>
+      <div class="v-sub" id="vsub"></div>
+    </div>
+    <div class="meters" id="meters"></div>
+    <div class="oracle-box"><div id="oracle-txt"></div></div>
+    <div class="kw-row" id="kwrow"></div>
+    <div class="share-section">
+      <div class="share-lbl">◈ SHARE</div>
+      <div class="share-btns">
+        <button class="sbtn img" onclick="shareImg()">📷 画像保存</button>
+        <button class="sbtn msg" onclick="shareMsg()">💬 シェア</button>
+        <button class="sbtn copy" onclick="copyLnk()">🔗 コピー</button>
+      </div>
+    </div>
+    <div class="history" id="history" style="display:none">
+      <div class="h-lbl">◈ SCAN HISTORY</div>
+      <div id="hlist"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CANVAS BG ──
+const bg=document.getElementById('bg'),bgCtx=bg.getContext('2d');
+let W,H,bgT=0,stars=[];
+function resizeBg(){W=bg.width=window.innerWidth;H=bg.height=window.innerHeight;
+  stars=Array.from({length:160},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.2,a:Math.random()*.7+.1,ph:Math.random()*Math.PI*2,sp:Math.random()*.018+.004}));}
+function drawBg(){bgCtx.clearRect(0,0,W,H);bgT+=.007;
+  const g=bgCtx.createRadialGradient(W*.5,H*.4,0,W*.5,H*.5,Math.max(W,H)*.75);
+  g.addColorStop(0,'#0a0612');g.addColorStop(.5,'#03060f');g.addColorStop(1,'#020408');
+  bgCtx.fillStyle=g;bgCtx.fillRect(0,0,W,H);
+  const ng=bgCtx.createRadialGradient(W*.5,H*.3,0,W*.5,H*.3,Math.min(W,H)*.38);
+  ng.addColorStop(0,'rgba(255,149,0,.05)');ng.addColorStop(1,'transparent');
+  bgCtx.fillStyle=ng;bgCtx.fillRect(0,0,W,H);
+  stars.forEach(s=>{const tw=.4+.6*Math.sin(bgT/s.sp*s.sp*8+s.ph);
+    bgCtx.beginPath();bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2);bgCtx.fillStyle=`rgba(200,220,255,${s.a*tw})`;bgCtx.fill();});
+  requestAnimationFrame(drawBg);}
+window.addEventListener('resize',resizeBg);resizeBg();drawBg();
+
+// ── EYE ──
+const eyeC=document.getElementById('eye'),eyeCtx=eyeC.getContext('2d');
+let eyeT=0,eyeState='idle';
+function drawEye(){eyeCtx.clearRect(0,0,160,160);eyeT+=.04;const cx=80,cy=80;
+  [44,56,68].forEach((r,i)=>{eyeCtx.save();eyeCtx.translate(cx,cy);eyeCtx.rotate(eyeT*(i%2?-1:1)*.5);
+    eyeCtx.strokeStyle=eyeState==='scanning'?`rgba(255,149,0,${.15+i*.08})`:eyeState==='truth'?`rgba(0,255,170,${.15+i*.08})`:eyeState==='lie'?`rgba(255,110,180,${.15+i*.08})`:`rgba(255,208,96,${.08+i*.04})`;
+    eyeCtx.lineWidth=1;eyeCtx.setLineDash([4+i*3,8-i*2]);eyeCtx.beginPath();eyeCtx.arc(0,0,r,0,Math.PI*2);eyeCtx.stroke();eyeCtx.restore();});
+  const pulse=.85+.15*Math.sin(eyeT*2),ir=26*pulse;
+  const iG=eyeCtx.createRadialGradient(cx,cy,0,cx,cy,ir);
+  if(eyeState==='scanning'){iG.addColorStop(0,'rgba(255,149,0,.9)');iG.addColorStop(.6,'rgba(196,181,253,.5)');iG.addColorStop(1,'transparent');}
+  else if(eyeState==='truth'){iG.addColorStop(0,'rgba(0,255,170,.95)');iG.addColorStop(.6,'rgba(125,211,252,.5)');iG.addColorStop(1,'transparent');}
+  else if(eyeState==='lie'){iG.addColorStop(0,'rgba(255,110,180,.95)');iG.addColorStop(.6,'rgba(255,149,0,.5)');iG.addColorStop(1,'transparent');}
+  else{iG.addColorStop(0,'rgba(255,208,96,.6)');iG.addColorStop(.6,'rgba(196,181,253,.2)');iG.addColorStop(1,'transparent');}
+  eyeCtx.beginPath();eyeCtx.arc(cx,cy,ir,0,Math.PI*2);eyeCtx.fillStyle=iG;eyeCtx.fill();
+  eyeCtx.beginPath();eyeCtx.arc(cx,cy,9,0,Math.PI*2);eyeCtx.fillStyle='rgba(2,4,8,.95)';eyeCtx.fill();
+  if(eyeState==='scanning'){eyeCtx.save();eyeCtx.translate(cx,cy);eyeCtx.rotate(eyeT*3);
+    eyeCtx.strokeStyle='rgba(255,149,0,.7)';eyeCtx.lineWidth=2;
+    eyeCtx.beginPath();eyeCtx.moveTo(0,0);eyeCtx.lineTo(0,-46);eyeCtx.stroke();eyeCtx.restore();}
+  eyeCtx.save();eyeCtx.translate(cx,cy);eyeCtx.rotate(eyeT*.12);
+  eyeCtx.strokeStyle='rgba(255,208,96,.08)';eyeCtx.lineWidth=.8;
+  eyeCtx.beginPath();
+  for(let i=0;i<3;i++){const a=i*Math.PI*2/3-Math.PI/2;i===0?eyeCtx.moveTo(Math.cos(a)*74,Math.sin(a)*74):eyeCtx.lineTo(Math.cos(a)*74,Math.sin(a)*74);}
+  eyeCtx.closePath();eyeCtx.stroke();eyeCtx.restore();
+  requestAnimationFrame(drawEye);}
+drawEye();
+
+// ── INPUT ──
+document.getElementById('stmt').addEventListener('input',function(){document.getElementById('cn').textContent=this.value.length;});
+function setEx(t){document.getElementById('stmt').value=t;document.getElementById('cn').textContent=t.length;}
+
+// ── SCORING ENGINE (API不要) ──
+const TRUTH_KEYWORDS=['科学的','証明','研究','データ','事実','法律','歴史','記録'];
+const LIE_KEYWORDS=['絶対','必ず','全員','すべて','いつも','決して','誰も','完璧'];
+const FRINGE_KEYWORDS=['政府','支配','隠蔽','陰謀','NASA','宇宙人','フリーメーソン','イルミナティ','ディープステート','コントロール'];
+const KOTODAMA_GOOD=['愛','光','命','魂','宇宙','真実','自由','平和','感謝','喜び'];
+const KOTODAMA_BAD=['嘘','偽','欺','破壊','憎','恐','支配','洗脳'];
+
+function analyzeText(text){
+  const t=text;
+  // 地球的真実度
+  let earth=50;
+  TRUTH_KEYWORDS.forEach(k=>{if(t.includes(k))earth+=8;});
+  LIE_KEYWORDS.forEach(k=>{if(t.includes(k))earth-=6;});
+  FRINGE_KEYWORDS.forEach(k=>{if(t.includes(k))earth-=10;});
+  earth=Math.max(5,Math.min(95,earth));
+  // 宇宙的整合性
+  let cosmos=50;
+  if(t.includes('宇宙')||t.includes('星')||t.includes('意識'))cosmos+=20;
+  if(t.includes('球体')||t.includes('科学'))cosmos+=10;
+  if(t.includes('平ら')||t.includes('フィルマメント'))cosmos+=15;
+  if(t.includes('シミュレーション')||t.includes('次元'))cosmos+=25;
+  cosmos=Math.max(5,Math.min(95,Math.round(cosmos+Math.random()*10-5)));
+  // 言霊共鳴度
+  let kotodama=50;
+  KOTODAMA_GOOD.forEach(k=>{if(t.includes(k))kotodama+=12;});
+  KOTODAMA_BAD.forEach(k=>{if(t.includes(k))kotodama-=10;});
+  kotodama=Math.max(5,Math.min(95,Math.round(kotodama+Math.random()*8-4)));
+  // 支配層隠蔽指数
+  let hidden=30;
+  FRINGE_KEYWORDS.forEach(k=>{if(t.includes(k))hidden+=15;});
+  if(t.includes('お金')||t.includes('経済')||t.includes('銀行'))hidden+=10;
+  if(t.includes('メディア')||t.includes('テレビ'))hidden+=12;
+  hidden=Math.max(5,Math.min(95,Math.round(hidden+Math.random()*12)));
+  // 覚醒レベル
+  let awaken=40;
+  if(t.includes('真実')||t.includes('目覚め')||t.includes('覚醒'))awaken+=25;
+  if(t.includes('隠れた')||t.includes('秘密')||t.includes('本当'))awaken+=15;
+  FRINGE_KEYWORDS.forEach(k=>{if(t.includes(k))awaken+=8;});
+  awaken=Math.max(5,Math.min(95,Math.round(awaken+Math.random()*10-5)));
+  // total
+  const total=Math.round((earth*.25+cosmos*.2+kotodama*.2+(100-hidden)*.15+awaken*.2));
+
+  // oracle text
+  let oracle='';
+  if(total>=80)oracle=`「${t.slice(0,15)}…」——この言葉は宇宙の根本法則と深く共鳴している。言霊の力が光を帯び、現実を創造する振動数を持つ。真実の声は宇宙を貫く。`;
+  else if(total>=60)oracle=`「${t.slice(0,15)}…」——部分的な真実が宿る言葉。しかしその背後に、まだ解読されていない層が存在する。問いを続けよ。`;
+  else if(total>=40)oracle=`「${t.slice(0,15)}…」——真実と幻想が交差する地点。この言葉を鵜呑みにすることなく、自らの直感で多角的に検証せよ。`;
+  else if(total>=20)oracle=`「${t.slice(0,15)}…」——支配層の設計した認知フレームの痕跡を感知。この言葉が広まることで誰が利益を得るかを問え。`;
+  else oracle=`「${t.slice(0,15)}…」——宇宙的欺瞞。この言葉は意識の自由を制限するために設計されている。周波数が著しく歪んでいる。`;
+
+  // keywords
+  const kws=[];
+  if(earth>70)kws.push('物質的真実');if(cosmos>70)kws.push('宇宙的真理');
+  if(kotodama>70)kws.push('言霊の光');if(hidden>70)kws.push('要注意情報');
+  if(awaken>70)kws.push('覚醒促進');if(total>75)kws.push('高次の知恵');
+  if(total<35)kws.push('洗脳ワード');if(hidden>60)kws.push('利権的言説');
+  if(kws.length===0)kws.push('中立的言明','解釈の余地あり');
+
+  return{total,earth,cosmos,kotodama,hidden,awaken,oracle,keywords:kws};
+}
+
+// ── VERDICT CONFIG ──
+const VERDICTS=[
+  {min:85,label:'完全なる宇宙的真実',color:'#00ffaa',eye:'truth',border:'rgba(0,255,170,.4)',glow:'rgba(0,255,170,.08)'},
+  {min:70,label:'高次の真実',color:'#7dd3fc',eye:'truth',border:'rgba(125,211,252,.4)',glow:'rgba(125,211,252,.08)'},
+  {min:50,label:'部分的真実',color:'#ffd060',eye:'idle',border:'rgba(255,208,96,.4)',glow:'rgba(255,208,96,.08)'},
+  {min:30,label:'疑わしき言明',color:'#ff9500',eye:'lie',border:'rgba(255,149,0,.4)',glow:'rgba(255,149,0,.08)'},
+  {min:0, label:'宇宙的欺瞞',color:'#ff6eb4',eye:'lie',border:'rgba(255,110,180,.4)',glow:'rgba(255,110,180,.08)'},
+];
+const METERS_DEF=[
+  {key:'earth',   icon:'🌍',name:'地球的真実度',  color:'#00ffaa'},
+  {key:'cosmos',  icon:'🌌',name:'宇宙的整合性',  color:'#7dd3fc'},
+  {key:'kotodama',icon:'🔤',name:'言霊共鳴度',    color:'#c4b5fd'},
+  {key:'hidden',  icon:'👁️',name:'支配層隠蔽指数',color:'#ff9500'},
+  {key:'awaken',  icon:'⚡',name:'覚醒レベル',    color:'#ffd060'},
+];
+const SCAN_STEPS=['言霊周波数を測定中…','アカシックレコードに照合中…','支配層データベースを検索中…','量子共鳴パターンを解析中…','宇宙真実指数を計算中…'];
+
+let scanHistory=[];
+let currentResult=null;
+let currentStmt='';
+
+async function startScan(){
+  const stmt=document.getElementById('stmt').value.trim();
+  if(!stmt){showToast('発言を入力してください');return;}
+  eyeState='scanning';
+  document.getElementById('scan-btn').disabled=true;
+  document.getElementById('scan-btn').classList.add('scanning');
+  const overlay=document.getElementById('loading');
+  const stepsEl=document.getElementById('load-steps');
+  overlay.classList.add('active');
+  for(let i=0;i<SCAN_STEPS.length;i++){
+    await sleep(500+Math.random()*300);
+    stepsEl.innerHTML=SCAN_STEPS.slice(0,i+1).map((s,j)=>`<div style="opacity:${j===i?1:.4}">${j<i?'✓':'»'} ${s}</div>`).join('');
+  }
+  await sleep(400);
+  const r=analyzeText(stmt);
+  currentResult=r;currentStmt=stmt;
+  overlay.classList.remove('active');
+  renderResult(stmt,r);
+}
+
+function renderResult(stmt,r){
+  const vd=VERDICTS.find(v=>r.total>=v.min)||VERDICTS[VERDICTS.length-1];
+  eyeState=vd.eye;
+  const vbox=document.getElementById('vbox');
+  vbox.style.borderColor=vd.border;
+  vbox.style.setProperty('--vg',vd.glow);
+  document.getElementById('vmain').textContent=vd.label;
+  document.getElementById('vmain').style.color=vd.color;
+  const scoreEl=document.getElementById('vscore');
+  scoreEl.style.color=vd.color;
+  let n=0;const tick=setInterval(()=>{n=Math.min(n+2,r.total);scoreEl.innerHTML=`${n}<span>/100</span>`;if(n>=r.total)clearInterval(tick);},18);
+  document.getElementById('vsub').textContent=r.total>=70?'この言葉は宇宙の真実に近い':r.total>=50?'真実と欺瞞が混在している':'意識的な操作の痕跡を感知';
+
+  // Meters
+  const grid=document.getElementById('meters');grid.innerHTML='';
+  METERS_DEF.forEach((m,i)=>{
+    const val=r[m.key]??50;
+    const card=document.createElement('div');card.className='meter-card';
+    card.innerHTML=`<div class="m-head"><div class="m-name">${m.icon} ${m.name}</div><div class="m-val" style="color:${m.color}">${val}</div></div><div class="m-bar-bg"><div class="m-bar-fill" style="background:${m.color}" data-val="${val}"></div></div><div class="m-desc">${getMDesc(m.key,val)}</div>`;
+    grid.appendChild(card);
+    setTimeout(()=>{card.querySelector('.m-bar-fill').style.width=val+'%';},300+i*100);
+  });
+
+  // Oracle
+  const oEl=document.getElementById('oracle-txt');oEl.textContent='';
+  let oi=0;const otick=setInterval(()=>{if(oi<r.oracle.length){oEl.textContent+=r.oracle[oi++];}else clearInterval(otick);},20);
+
+  // Keywords
+  document.getElementById('kwrow').innerHTML=(r.keywords||[]).map(k=>`<span class="kw">${k}</span>`).join('');
+
+  // History
+  scanHistory.unshift({stmt:stmt.length>30?stmt.slice(0,30)+'…':stmt,total:r.total,verdict:vd.label,color:vd.color});
+  if(scanHistory.length>5)scanHistory.pop();
+  renderHistory();
+
+  document.getElementById('result').classList.add('visible');
+  document.getElementById('scan-btn').disabled=false;
+  document.getElementById('scan-btn').classList.remove('scanning');
+  setTimeout(()=>document.getElementById('result').scrollIntoView({behavior:'smooth',block:'start'}),300);
+}
+
+function getMDesc(key,val){
+  const descs={
+    earth:{high:'現実世界での事実整合性が高い',mid:'部分的に現実と一致する',low:'現実の検証が困難'},
+    cosmos:{high:'宇宙の高次法則と深く共鳴',mid:'宇宙的な視点を含む',low:'物質次元に限定された言明'},
+    kotodama:{high:'言葉の霊的エネルギーが強い',mid:'中程度の言霊を持つ',low:'言葉の霊力が弱い'},
+    hidden:{high:'支配層による隠蔽の疑いが強い',mid:'一部に利権的背景の可能性',low:'隠蔽の痕跡は少ない'},
+    awaken:{high:'意識覚醒を促進する言葉',mid:'一定の覚醒効果がある',low:'現状維持の言説'},
+  };
+  const d=descs[key];if(!d)return '';
+  return val>=65?d.high:val>=40?d.mid:d.low;
+}
+
+function renderHistory(){
+  const sec=document.getElementById('history'),list=document.getElementById('hlist');
+  if(scanHistory.length<2){sec.style.display='none';return;}
+  sec.style.display='block';
+  list.innerHTML=scanHistory.map(h=>`<div class="h-item"><div class="h-score" style="color:${h.color}">${h.total}</div><div class="h-text">${h.stmt}</div><div class="h-verdict" style="color:${h.color}">${h.verdict}</div></div>`).join('');
+}
+
+// ── SHARE ──
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+function shareImg(){
+  if(!currentResult){showToast('先にスキャンしてください');return;}
+  const r=currentResult,stmt=currentStmt;
+  const vd=VERDICTS.find(v=>r.total>=v.min)||VERDICTS[VERDICTS.length-1];
+  const c=document.getElementById('share-canvas');c.width=800;c.height=460;
+  const ctx=c.getContext('2d');
+  const g=ctx.createLinearGradient(0,0,800,460);g.addColorStop(0,'#020408');g.addColorStop(1,'#060c18');
+  ctx.fillStyle=g;ctx.fillRect(0,0,800,460);
+  ctx.strokeStyle=vd.color;ctx.lineWidth=2;ctx.strokeRect(12,12,776,436);
+  ctx.font='bold 12px monospace';ctx.fillStyle='#7dd3fc';ctx.textAlign='left';ctx.fillText('INFINITY ∞ WORLD — 宇宙的嘘発見器',28,40);
+  ctx.font='bold 20px monospace';ctx.fillStyle=vd.color;ctx.textAlign='center';ctx.fillText(vd.label,400,80);
+  ctx.font='bold 64px monospace';ctx.fillStyle=vd.color;ctx.fillText(r.total,400,160);
+  ctx.font='14px monospace';ctx.fillStyle='#7dd3fc';ctx.fillText('COSMIC TRUTH SCORE / 100',400,185);
+  ctx.font='15px serif';ctx.fillStyle='#e0eeff';ctx.textAlign='left';
+  const sw=Math.round(stmt.slice(0,40));ctx.fillText('「'+stmt.slice(0,44)+(stmt.length>44?'…':'')+'」',28,225);
+  const mdef=[{k:'earth',n:'地球的真実度',c:'#00ffaa'},{k:'cosmos',n:'宇宙的整合性',c:'#7dd3fc'},{k:'kotodama',n:'言霊共鳴度',c:'#c4b5fd'},{k:'hidden',n:'支配層隠蔽',c:'#ff9500'},{k:'awaken',n:'覚醒レベル',c:'#ffd060'}];
+  mdef.forEach((m,i)=>{
+    const x=28+(i%3)*254,y=260+Math.floor(i/3)*80,val=r[m.k]??50;
+    ctx.font='11px monospace';ctx.fillStyle=m.c;ctx.textAlign='left';ctx.fillText(m.n,x,y);
+    ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(x,y+8,230,4);
+    ctx.fillStyle=m.c;ctx.fillRect(x,y+8,Math.round(230*val/100),4);
+    ctx.font='bold 16px monospace';ctx.fillStyle=m.c;ctx.fillText(val,x+235,y+14);
+  });
+  ctx.font='10px monospace';ctx.fillStyle='#2a3a6a';ctx.textAlign='right';ctx.fillText('@miya — miya-max369.github.io/infinity-world/',770,440);
+  const a=document.createElement('a');a.href=c.toDataURL('image/png');a.download='cosmic_lie_detector.png';a.click();
+  showToast('📷 画像を保存しました');
+}
+
+function shareMsg(){
+  if(!currentResult){showToast('先にスキャンしてください');return;}
+  const r=currentResult,stmt=currentStmt;
+  const vd=VERDICTS.find(v=>r.total>=v.min)||VERDICTS[VERDICTS.length-1];
+  const text=`【宇宙的嘘発見器】\n「${stmt.slice(0,30)}${stmt.length>30?'…':''}」\n\n判定: ${vd.label}\nスコア: ${r.total}/100\n\n${r.oracle.slice(0,60)}…\n\n#INFINITYWORLD #宇宙的真実\nhttps://miya-max369.github.io/infinity-world/`;
+  if(navigator.share){navigator.share({title:'INFINITY ∞ WORLD 宇宙的嘘発見器',text,url:'https://miya-max369.github.io/infinity-world/'}).catch(()=>{});}
+  else{navigator.clipboard.writeText(text).then(()=>showToast('💬 テキストをコピーしました'));}
+}
+
+function copyLnk(){navigator.clipboard.writeText('https://miya-max369.github.io/infinity-world/lie_detector.html').then(()=>showToast('🔗 リンクをコピーしました'));}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+</script>
+</body>
+</html>

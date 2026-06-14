@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INFINITY ∞ WORLD — フリンジ理論マップ</title>
+<style>
+:root {
+  --void: #02040a;
+  --electric: #00d4ff;
+  --plasma: #bf00ff;
+  --gold: #ffd060;
+  --jade: #00ffaa;
+  --rose: #ff6eb4;
+  --sky: #7dd3fc;
+  --lavender: #c4b5fd;
+  --pale: #e0eeff;
+  --white: #f0f4ff;
+  --dim: #2a3a6a;
+  --panel: rgba(3,8,22,0.97);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:var(--void);color:var(--white);font-family:serif;overflow:hidden;cursor:crosshair;}
+
+#bg{position:fixed;inset:0;z-index:0;}
+#map{position:fixed;inset:0;z-index:1;}
+
+/* HEADER */
+#hdr{
+  position:fixed;top:0;left:0;right:0;z-index:10;
+  padding:14px 20px 10px;
+  background:linear-gradient(to bottom,rgba(2,4,10,.95),transparent);
+  display:flex;align-items:center;justify-content:space-between;
+  pointer-events:none;
+}
+.logo-main{
+  font-family:monospace;font-size:clamp(11px,2vw,15px);letter-spacing:4px;
+  background:linear-gradient(90deg,var(--gold),var(--electric),var(--lavender));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-weight:700;
+}
+.logo-sub{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--sky);margin-top:3px;}
+
+/* FILTERS */
+#filters{
+  position:fixed;top:64px;left:50%;transform:translateX(-50%);
+  z-index:10;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:0 16px;
+}
+.fb{
+  font-family:monospace;font-size:10px;letter-spacing:2px;
+  padding:5px 12px;border:1px solid;background:rgba(2,4,10,.85);
+  cursor:pointer;transition:all .2s;text-transform:uppercase;
+}
+.fb[data-c="all"]    {border-color:var(--pale);   color:var(--pale);}
+.fb[data-c="cosmos"] {border-color:var(--sky);    color:var(--sky);}
+.fb[data-c="earth"]  {border-color:var(--jade);   color:var(--jade);}
+.fb[data-c="history"]{border-color:var(--gold);   color:var(--gold);}
+.fb[data-c="mind"]   {border-color:var(--lavender);color:var(--lavender);}
+.fb[data-c="tech"]   {border-color:var(--rose);   color:var(--rose);}
+.fb.active,.fb:hover{background:rgba(255,255,255,.1);transform:translateY(-1px);}
+
+/* NODE COUNT */
+#nc{position:fixed;top:64px;right:16px;z-index:10;font-family:monospace;font-size:9px;letter-spacing:2px;color:var(--dim);}
+
+/* TOOLTIP */
+#tip{
+  position:fixed;z-index:15;pointer-events:none;
+  background:rgba(3,8,22,.95);border:1px solid rgba(0,212,255,.35);
+  padding:8px 14px;font-family:monospace;font-size:11px;letter-spacing:1px;
+  white-space:nowrap;opacity:0;transition:opacity .15s;color:var(--pale);
+}
+
+/* HINT */
+#hint{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:10;
+  font-family:monospace;font-size:10px;letter-spacing:3px;color:var(--dim);
+  animation:blink 2.5s infinite;pointer-events:none;white-space:nowrap;
+}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:.8}}
+
+/* PANEL */
+#panel{
+  position:fixed;right:-480px;top:0;bottom:0;width:min(460px,100vw);
+  z-index:20;background:var(--panel);border-left:1px solid rgba(0,212,255,.15);
+  display:flex;flex-direction:column;transition:right .5s cubic-bezier(.16,1,.3,1);
+  backdrop-filter:blur(20px);overflow:hidden;
+}
+#panel.open{right:0;}
+
+#phdr{padding:20px 24px 16px;border-bottom:1px solid rgba(255,255,255,.06);position:relative;}
+#pcat{font-family:monospace;font-size:9px;letter-spacing:4px;margin-bottom:8px;}
+#ptitle{font-size:clamp(16px,3vw,22px);font-weight:700;line-height:1.3;color:var(--gold);}
+#pclose{
+  position:absolute;top:16px;right:16px;width:30px;height:30px;
+  border:1px solid var(--dim);background:none;color:var(--sky);
+  font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+#pclose:hover{border-color:var(--electric);color:var(--electric);}
+
+#pbody{flex:1;overflow-y:auto;padding:20px 24px;scrollbar-width:thin;scrollbar-color:var(--dim) transparent;}
+#pdesc{font-size:14px;line-height:2;color:var(--pale);margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.06);}
+
+/* FISHBONE */
+#fishbone-section{margin-bottom:20px;}
+.fb-label{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--electric);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.fb-label::after{content:'';flex:1;height:1px;background:rgba(0,212,255,.2);}
+.fb-tree{}
+.fb-node{
+  display:flex;align-items:flex-start;gap:8px;
+  margin-bottom:6px;cursor:pointer;padding:8px 12px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(255,255,255,.02);
+  transition:all .2s;position:relative;
+}
+.fb-node:hover{border-color:var(--sky);background:rgba(125,211,252,.06);}
+.fb-node.expanded{border-color:var(--electric);}
+.fb-arrow{font-family:monospace;font-size:10px;color:var(--sky);flex-shrink:0;transition:transform .2s;margin-top:2px;}
+.fb-node.expanded .fb-arrow{transform:rotate(90deg);}
+.fb-node-text{font-size:13px;line-height:1.7;color:var(--pale);flex:1;}
+.fb-node-tag{font-family:monospace;font-size:9px;letter-spacing:1px;color:var(--lavender);flex-shrink:0;}
+.fb-children{margin-left:20px;border-left:1px solid rgba(0,212,255,.15);padding-left:12px;display:none;}
+.fb-children.open{display:block;}
+.fb-child{
+  font-size:12px;line-height:1.8;color:var(--sky);padding:6px 10px;
+  margin-bottom:4px;cursor:pointer;border:1px solid rgba(125,211,252,.1);
+  background:rgba(125,211,252,.03);transition:all .2s;
+}
+.fb-child:hover{border-color:var(--sky);background:rgba(125,211,252,.08);color:var(--white);}
+.fb-grandchild{
+  font-size:11px;color:var(--lavender);padding:4px 8px;margin:3px 0 3px 16px;
+  border-left:2px solid rgba(196,181,253,.2);line-height:1.7;
+  cursor:pointer;transition:color .2s;
+}
+.fb-grandchild:hover{color:var(--white);}
+
+/* VERDICT */
+#verdict-box{
+  background:linear-gradient(135deg,rgba(0,212,255,.06),rgba(191,0,255,.04));
+  border:1px solid rgba(0,212,255,.2);padding:16px 20px;margin-bottom:20px;
+}
+.v-label{font-family:monospace;font-size:9px;letter-spacing:3px;color:var(--electric);margin-bottom:8px;}
+.v-score{font-family:monospace;font-size:36px;font-weight:700;color:var(--gold);line-height:1;}
+.v-score span{font-size:14px;color:var(--sky);}
+.v-text{font-size:13px;color:var(--pale);margin-top:8px;line-height:1.7;}
+
+/* TAGS */
+#ptags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px;}
+.ptag{font-family:monospace;font-size:9px;letter-spacing:1px;padding:4px 10px;border:1px solid rgba(255,255,255,.1);color:var(--sky);}
+
+/* SHARE */
+#share-section{padding-top:16px;border-top:1px solid rgba(255,255,255,.06);}
+.share-label{font-family:monospace;font-size:9px;letter-spacing:4px;color:var(--lavender);margin-bottom:10px;}
+.share-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.share-btn{
+  font-family:monospace;font-size:10px;letter-spacing:2px;padding:8px 16px;
+  background:none;cursor:pointer;border:1px solid;transition:all .2s;flex:1;min-width:100px;
+  color:var(--pale);
+}
+.share-btn.img{border-color:var(--gold);color:var(--gold);}
+.share-btn.img:hover{background:rgba(255,208,96,.1);}
+.share-btn.msg{border-color:var(--lavender);color:var(--lavender);}
+.share-btn.msg:hover{background:rgba(196,181,253,.1);}
+.share-btn.copy{border-color:var(--sky);color:var(--sky);}
+.share-btn.copy:hover{background:rgba(125,211,252,.1);}
+
+/* SHARE TOAST */
+#toast{
+  position:fixed;bottom:60px;left:50%;transform:translateX(-50%);
+  background:rgba(3,8,22,.97);border:1px solid var(--jade);
+  padding:10px 24px;font-family:monospace;font-size:11px;letter-spacing:2px;
+  color:var(--jade);z-index:100;opacity:0;transition:opacity .3s;pointer-events:none;
+  white-space:nowrap;
+}
+#toast.show{opacity:1;}
+
+/* SHARE CANVAS (hidden) */
+#share-canvas{display:none;}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+<canvas id="map"></canvas>
+
+<div id="hdr">
+  <div>
+    <div class="logo-main">INFINITY ∞ WORLD</div>
+    <div class="logo-sub">FRINGE THEORY MAP — UNIVERSE EDITION</div>
+  </div>
+</div>
+
+<div id="filters">
+  <button class="fb active" data-c="all">ALL</button>
+  <button class="fb" data-c="cosmos">🌌 宇宙</button>
+  <button class="fb" data-c="earth">🌍 地球</button>
+  <button class="fb" data-c="history">🏛️ 歴史</button>
+  <button class="fb" data-c="mind">🧠 意識</button>
+  <button class="fb" data-c="tech">⚡ テクノロジー</button>
+</div>
+
+<div id="nc"></div>
+<div id="tip"></div>
+<div id="hint">◎ ノードをタップして理論を深掘りする</div>
+<div id="toast"></div>
+<canvas id="share-canvas"></canvas>
+
+<div id="panel">
+  <div id="phdr">
+    <div id="pcat"></div>
+    <div id="ptitle"></div>
+    <button id="pclose" onclick="closePanel()">✕</button>
+  </div>
+  <div id="pbody">
+    <div id="pdesc"></div>
+
+    <div id="verdict-box">
+      <div class="v-label">◈ FRINGE INDEX</div>
+      <div class="v-score" id="vscore">—<span>/100</span></div>
+      <div class="v-text" id="vtext"></div>
+    </div>
+
+    <div id="fishbone-section">
+      <div class="fb-label">◈ 深掘りマップ — FISHBONE</div>
+      <div class="fb-tree" id="fb-tree"></div>
+    </div>
+
+    <div id="ptags"></div>
+
+    <div id="share-section">
+      <div class="share-label">◈ SHARE</div>
+      <div class="share-btns">
+        <button class="share-btn img" onclick="shareImage()">📷 画像保存</button>
+        <button class="share-btn msg" onclick="shareMessage()">💬 シェア</button>
+        <button class="share-btn copy" onclick="copyLink()">🔗 リンクコピー</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════
+// DATA
+// ════════════════════════════════
+const THEORIES = [
+  {id:'flatearth', cat:'earth', label:'平らな地球', en:'FLAT EARTH', x:.22,y:.30,r:28,color:'#00ffaa',
+   desc:'地球は球体ではなく、南極を外縁とする円盤状の平面であるという説。NASAの宇宙映像はすべて合成であり、フィルマメントと呼ばれる固体の天蓋が上空を覆っているとされる。',
+   score:78, verdict:'極めて高いフリンジ指数。主流科学と完全に対立するが、独自の宇宙観として根強い支持を持つ。',
+   tags:['フィルマメント','南極条約','NASA','地平線'],
+   fishbone:[
+     {q:'なぜ球体説が広まったのか？',a:'15世紀以降の航海・天文学の発展。地平線の消え方、月食の形、星の動きが球体を示す。',subs:['マゼランの世界一周航海','月食時の円い影','南半球の星座観測']},
+     {q:'フィルマメントとは何か？',a:'古代の宇宙観で地球を覆う固体の天蓋。旧約聖書にも記述あり。水と宇宙を隔てる壁とされる。',subs:['創世記の「天の大空」','北欧神話のユグドラシル','シュメールの天球概念']},
+     {q:'南極の謎とは？',a:'南極条約（1959）で一般人の自由な訪問が制限されている。これが隠蔽の証拠とする見方がある。',subs:['南極条約締結国12カ国','飛行禁止区域の存在','アドミラル・バードの遠征記録']},
+     {q:'関連する他の説は？',a:'地球空洞説、フィルマメント説、タルタリア帝国との関連が指摘される。',subs:['フィルマメント説','地球空洞説','タルタリア帝国']},
+   ]},
+  {id:'hollow', cat:'cosmos', label:'地球空洞説', en:'HOLLOW EARTH', x:.33,y:.48,r:24,color:'#00d4ff',
+   desc:'地球内部は空洞になっており、内部に別の文明・種族が存在するという説。アガルタ、シャンバラとも関連し、北極・南極の穴から内部にアクセス可能とされる。',
+   score:72, verdict:'古代から現代まで続く根強い説。チベット密教とも深く結びつく神秘的な世界観。',
+   tags:['アガルタ','シャンバラ','内部太陽','レプタリアン'],
+   fishbone:[
+     {q:'アガルタとは何か？',a:'地底に存在するとされる超古代文明都市。チベット密教の聖典に記述があり、高度な精神文明が続いているとされる。',subs:['チベット密教の聖典','ニコラ・レーリヒの調査','シャンバラとの関係']},
+     {q:'内部太陽の根拠は？',a:'地球内部に小さな太陽が存在し、内部世界を照らしているという説。オーロラはその光が漏れたものとも言われる。',subs:['オーロラの別解釈','極地の異常な温度','バードの日誌記述']},
+     {q:'歴史的な探索記録は？',a:'アドミラル・バードが1947年の北極飛行で内部世界に入ったという記録が存在する（真偽不明）。',subs:['バードの秘密日誌','ナチスの南極基地','日本の超古代伝承']},
+     {q:'レプタリアンとの関係は？',a:'爬虫類型宇宙人が地球内部に居住し、地表の人類を支配しているという現代的解釈。',subs:['デイヴィッド・アイクの説','古代シュメールの記録','DNA改変の痕跡']},
+   ]},
+  {id:'firmament', cat:'cosmos', label:'フィルマメント', en:'FIRMAMENT', x:.14,y:.44,r:20,color:'#7dd3fc',
+   desc:'地球を覆う固体または液体の天蓋。古代の宇宙観に基づく概念で、旧約聖書にも記述がある。現代の宇宙開発はこの天蓋の存在を隠蔽しているという説もある。',
+   score:70, verdict:'古代宇宙観の核心。多くのフリンジ理論の基盤となる概念。',
+   tags:['創世記','天蓋','水の上の水','宇宙の境界'],
+   fishbone:[
+     {q:'聖書との関係は？',a:'創世記1章に「神は大空を作り、大空の下の水と上の水を分けた」という記述がある。これがフィルマメントの根拠。',subs:['創世記1:6-8','詩篇19篇','ヨブ記の天の描写']},
+     {q:'水の層とは？',a:'フィルマメントの外側には大量の水（第二の海）が存在し、かつての洪水神話はこの水が流入したものという説。',subs:['ノアの洪水との関係','気象制御の可能性','古代地球の気候の謎']},
+     {q:'宇宙開発との矛盾は？',a:'国際宇宙ステーションや衛星の映像はすべて合成とされ、本当の宇宙は存在しないという説がある。',subs:['ISS映像の疑問点','ロケット軌道の謎','宇宙飛行士の証言矛盾']},
+   ]},
+  {id:'simulation', cat:'cosmos', label:'シミュレーション', en:'SIMULATION', x:.54,y:.26,r:30,color:'#c4b5fd',
+   desc:'現実はコンピューターシミュレーションである可能性。ニック・ボストロムの論文やイーロン・マスクの発言で広まった。量子力学の観察者効果とも整合する。',
+   score:55, verdict:'主流科学者も真剣に議論する現代的仮説。哲学・物理学の境界領域。',
+   tags:['デジタル意識','マトリックス','量子観察','情報宇宙'],
+   fishbone:[
+     {q:'ボストロムの論文とは？',a:'2003年の論文「Are you living in a computer simulation?」で、文明が十分発達すれば先祖のシミュレーションを実行するという論証。',subs:['三択のトリレンマ','計算資源の限界','意識のデジタル化可能性']},
+     {q:'量子力学との関係は？',a:'二重スリット実験の「観察すると波が粒子になる」現象は、レンダリング最適化（見られた時だけ計算する）に似ている。',subs:['二重スリット実験','シュレーディンガーの猫','量子もつれの情報転送']},
+     {q:'プランク長の意味は？',a:'物理の最小単位（プランク長）の存在は、デジタルシステムのピクセルのような「解像度の限界」と解釈できる。',subs:['プランク長≈1.6×10⁻³⁵m','デジタル宇宙論','マックス・テグマークの数学的宇宙']},
+     {q:'脱出方法はあるか？',a:'悟りや臨死体験、DMTによる意識拡張がシミュレーションの「外」にアクセスする方法という説がある。',subs:['臨死体験の共通パターン','DMT体験者の証言','瞑想による時空超越']},
+   ]},
+  {id:'multiverse', cat:'cosmos', label:'多次元宇宙', en:'MULTIVERSE', x:.64,y:.38,r:26,color:'#c4b5fd',
+   desc:'無数の並行宇宙が存在するという概念。量子力学の多世界解釈、超弦理論から導かれる。マンデラ効果の説明としても用いられる。',
+   score:48, verdict:'主流物理学でも真剣に議論される仮説。フリンジと科学の境界線上に位置する。',
+   tags:['マンデラ効果','量子分岐','パラレルセルフ','超弦理論'],
+   fishbone:[
+     {q:'マンデラ効果とは？',a:'多数の人々が共通して「間違った記憶」を持つ現象。並行宇宙からの記憶の混入として説明される。',subs:['ネルソン・マンデラの死の記憶','ピカチュウの尻尾','チャーリーとチョコレート工場の表紙']},
+     {q:'量子多世界解釈とは？',a:'エヴェレットの1957年の論文。量子の「観察」のたびに宇宙が分岐し、すべての可能性が実現するという解釈。',subs:['シュレーディンガーの猫の解決','デコヒーレンス理論','量子自殺の思考実験']},
+     {q:'超弦理論との関係は？',a:'M理論では10次元または11次元が存在し、膜宇宙（ブレーン）が衝突することで新しいビッグバンが生じる。',subs:['M理論の11次元','膜宇宙の衝突','エクパイロティック宇宙論']},
+   ]},
+  {id:'planet9', cat:'cosmos', label:'惑星X/ニビル', en:'PLANET X', x:.74,y:.20,r:20,color:'#7dd3fc',
+   desc:'太陽系外縁部に存在するとされる未知の惑星。シュメール神話ではニビルと呼ばれ、アヌンナキの故郷とされる。定期的に地球に接近し大異変を引き起こすとも言われる。',
+   score:65, verdict:'天文学的な観測データに基づく部分もある。シュメール神話との融合が神秘性を高める。',
+   tags:['アヌンナキ','シュメール','軌道異常','ゼカリア・シッチン'],
+   fishbone:[
+     {q:'天文学的根拠は？',a:'海王星外縁天体の軌道異常から、巨大惑星の存在が示唆される。カリフォルニア工科大学の研究者も可能性を指摘。',subs:['海王星外縁天体の軌道異常','カルテック研究チームの発表','赤外線観測の未確認データ']},
+     {q:'ニビルとは何か？',a:'シュメールの粘土板に記された「十二番目の天体」。アヌンナキがこの惑星から地球に来たとされる。約3600年の軌道周期。',subs:['シュメール天文学の精度','ゼカリア・シッチンの翻訳','3600年周期と古代文明の崩壊']},
+     {q:'地球への影響は？',a:'接近のたびに地磁気逆転、地軸移動、大洪水が起きたという説。ノアの洪水やアトランティス消滅との関連。',subs:['地磁気逆転の地質記録','アトランティス消滅の時期','マヤ暦の終末予言との一致']},
+   ]},
+  {id:'tartaria', cat:'history', label:'タルタリア', en:'TARTARIA', x:.40,y:.60,r:26,color:'#ffd060',
+   desc:'かつて地球上に存在したとされる超大型帝国。高度な建築技術を持つ文明が歴史から意図的に抹消されたという説。世界中の壮大な建築物がその遺構とされる。',
+   score:82, verdict:'歴史書と建築様式の矛盾から生まれた説。急速に支持者を増やしている。',
+   tags:['リセットイベント','帝国主義','建築ミステリー','記憶削除'],
+   fishbone:[
+     {q:'タルタリア帝国とはどんな国か？',a:'中世から19世紀まで存在したとされるユーラシア大陸の超大帝国。ムガル帝国、オスマン帝国を超える規模とされ、フリーエネルギーと高度建築技術を持っていた。',subs:['1860年代の地図でのTartaria表記','グレートタルタリーの範囲','モスクワのタルタリア期建築物']},
+     {q:'歴史から消された証拠は？',a:'1800年代の博覧会建築（水晶宮、シカゴ万博など）は現代では再現不可能な精度を持ち、実際には古代建築の流用という説がある。',subs:['1893年シカゴ万博の謎','セントルイス万博の建築','パリのオペラ座の地下構造']},
+     {q:'泥水洪水との関係は？',a:'19世紀に大規模な泥流が帝国を埋め尽くし、歴史がリセットされたという説。建物の地下埋没がその証拠とされる。',subs:['地下室のない古建築','窓のない第一層','土に埋まった柱の発見']},
+     {q:'フリーエネルギー技術は？',a:'タルタリアはテスラ型の大気電力システムを持っており、世界中の尖塔建築（教会の尖塔、ワシントン記念碑等）がその受信アンテナだったという説。',subs:['ニコラ・テスラとの関係','教会の尖塔の構造','ワシントン記念碑の電気的特性']},
+   ]},
+  {id:'mud_flood', cat:'history', label:'泥水洪水説', en:'MUD FLOOD', x:.28,y:.66,r:22,color:'#ffd060',
+   desc:'数百年前に大規模な泥流が地球を覆い、先行文明を埋め尽くしたという説。地下に埋もれた建物の第一層が証拠とされる。タルタリア説と密接に関連。',
+   score:74, verdict:'建築物の埋没という物理的証拠に基づく説。都市考古学と交差する。',
+   tags:['タルタリア','歴史リセット','埋まった建物','先行文明'],
+   fishbone:[
+     {q:'物理的証拠は何か？',a:'世界中の古い建物の「地下室」は実は元の1階であり、泥流で埋没したという証拠がある。窓が地面スレスレにある建物が多い。',subs:['サンクトペテルブルクの地下構造','ニューヨーク地下道の謎','東京の関東ローム層']},
+     {q:'いつ起きたのか？',a:'1800年前後、特に1812〜1850年の間に世界的な大変動があったという説。この時期の「人口空白」が証拠とされる。',subs:['1815年タンボラ火山噴火','1816年「夏のない年」','人口記録の空白期間']},
+     {q:'孤児列車との関係は？',a:'19世紀アメリカで大量の孤児が存在した（孤児列車計画）。泥水洪水で親を失った子供たちという解釈がある。',subs:['1854〜1929年の孤児列車','孤児数の異常な多さ','記録からの人口消失']},
+   ]},
+  {id:'anunnaki', cat:'history', label:'アヌンナキ', en:'ANUNNAKI', x:.76,y:.52,r:28,color:'#ffd060',
+   desc:'シュメールの粘土板に記された宇宙から来た神々。人類を労働力として遺伝子操作で創造したとされる。現在も密かに地球を支配し続けているという現代的解釈もある。',
+   score:80, verdict:'シュメール研究と現代の宇宙人論が融合した最も有名なフリンジ理論の一つ。',
+   tags:['シュメール粘土板','遺伝子改変','ニビル','ゼカリア・シッチン'],
+   fishbone:[
+     {q:'シュメール粘土板の内容は？',a:'エヌマ・エリシュ（バビロン創世神話）やアトラハシス叙事詩に、神々（アヌンナキ）が人間を金の採掘労働者として創造した記述がある。',subs:['エヌマ・エリシュの翻訳','アトラハシス叙事詩','12人の主要アヌンナキの名前']},
+     {q:'人類の遺伝子改変とは？',a:'現生人類（ホモ・サピエンス）の突然の出現と、チンパンジーとの遺伝的乖離が自然進化では説明困難という指摘。遺伝子操作の痕跡とする説。',subs:['ミトコンドリアイブの謎','染色体融合の証拠','ジャンクDNAの役割']},
+     {q:'現在も支配しているのか？',a:'アヌンナキの子孫が王族・支配層として現代も地球を管理しているという説。血液型Rh陰性との関係も指摘される。',subs:['王族の血統の連続性','Rh陰性血液型の謎','フリーメーソンとの接続']},
+     {q:'エンキとエンリルの対立とは？',a:'アヌンナキの二大派閥。エンキ（人類の創造者・味方）とエンリル（人類抹殺派）の対立が人類史を動かしてきたという解釈。',subs:['ノアの洪水のエンリル命令','エンキによるノアへの警告','現代の支配層とエンリル派']},
+   ]},
+  {id:'ancient_tech', cat:'history', label:'古代超技術', en:'ANCIENT TECH', x:.56,y:.66,r:24,color:'#ffd060',
+   desc:'ピラミッド、バールベックの巨石群、ナスカの地上絵などは現代技術でも再現困難な精度を持つ。失われた高度技術文明の存在を示唆する。',
+   score:68, verdict:'考古学的事実に基づく部分が多い。主流考古学との緊張関係が続く領域。',
+   tags:['ピラミッド','音響浮上','オーパーツ','失われた文明'],
+   fishbone:[
+     {q:'大ピラミッドの謎は？',a:'ギザの大ピラミッドの石材精度は0.01mm以下。現代のレーザー加工に匹敵する。建設方法は未解明のまま。',subs:['花崗岩加工の精度','内部通路の正確な方向','地球の中心を示す位置']},
+     {q:'音響浮上技術とは？',a:'特定の音波・周波数で物体を浮上させる技術。チベットの僧侶による岩石浮上の目撃証言や、実験室での超音波浮上が根拠。',subs:['チベット僧の岩石浮上証言','現代の超音波浮上実験','コーネル大学の研究']},
+     {q:'バールベックの巨石は？',a:'レバノンのバールベック神殿には800〜1000トンの巨石が使用されている。現代の最大クレーンでも移動不可能な重量。',subs:['1500トンの「妊婦の石」','ローマ以前の建造者','石切り場と神殿の距離']},
+     {q:'ナスカの地上絵は？',a:'上空からしか全体が見えない地上絵。宇宙人への着陸ガイドまたは古代の天文カレンダーという説がある。',subs:['磁力線との一致','地球外から見た角度','水路システムとの関係']},
+   ]},
+  {id:'katakamuna', cat:'mind', label:'カタカムナ', en:'KATAKAMUNA', x:.18,y:.62,r:26,color:'#c4b5fd',
+   desc:'日本最古の超古代文明が残したとされる文字体系。楢崎皐月が1949年に発見。カタカムナの音は宇宙の根本法則を音声化したものとされ、言霊と深く関連する。',
+   score:76, verdict:'日本独自の超古代文明論。言語・物理・宇宙論が融合した独特の世界観。',
+   tags:['言霊','楢崎皐月','超古代文明','音の宇宙法則'],
+   fishbone:[
+     {q:'楢崎皐月とは何者か？',a:'物理学者・工学者。1949年に兵庫県の六甲山で猟師・平十字からカタカムナ文字を教わったとされる。その後「相似象学」として体系化。',subs:['楢崎の経歴と研究','平十字という謎の人物','相似象学の基本原理']},
+     {q:'カタカムナウタヒとは？',a:'48首の歌（ウタヒ）で構成される文書。宇宙の創生から物質の生成まで、音の振動で表現されているとされる。',subs:['第1首：アシアトウアン','音の周波数と物質生成','現代物理学との対応']},
+     {q:'現代科学との接点は？',a:'素粒子論、量子論との対応が指摘される。「ヒフミヨイムナヤコト」の数字列がフィボナッチ数列と関連するという説も。',subs:['素粒子とカタカムナ音素','フィボナッチ数列との対応','波動医学への応用']},
+     {q:'言霊との関係は？',a:'カタカムナの音（カ・タ・カ・ム・ナ）は宇宙の生成原理を表す。各音素が特定の物理現象・エネルギー状態に対応するとされる。',subs:['「カ」＝カムの力（核力）','「タ」＝タカマの統合力','古事記の神名との対応']},
+   ]},
+  {id:'kotodama', cat:'mind', label:'言霊', en:'KOTODAMA', x:.10,y:.55,r:22,color:'#7dd3fc',
+   desc:'言葉に宿る霊的な力。日本古来の思想で、言葉を発することで現実に作用するという概念。五十音それぞれに宇宙的な意味と振動数があるとされる。',
+   score:62, verdict:'日本の古神道・祝詞に根ざした思想。現代の波動理論とも共鳴する。',
+   tags:['五十音','音霊','古事記','現実創造'],
+   fishbone:[
+     {q:'言霊の歴史的根拠は？',a:'万葉集に「言霊の幸はふ国」という表現があり、古代日本では言葉に霊力があると信じられていた。祝詞・呪文の伝統。',subs:['万葉集の言霊観','祝詞の音響効果','ノリトの意味構造']},
+     {q:'五十音の宇宙観とは？',a:'ア行からワ行までの音が、宇宙の生成・展開プロセスを音で表現しているという説。母音「アイウエオ」が根源。',subs:['「ア」＝開始・宇宙の始まり','「ウ」＝生命力の中心','古事記のイザナギ・イザナミ']},
+     {q:'江本勝の水の研究は？',a:'「水は答えを知っている」の著者。水に言葉を見せると結晶の形が変わるという実験。再現性に疑問もあるが支持者多数。',subs:['美しい言葉の水結晶','「ありがとう」の結晶形','実験の再現可能性問題']},
+   ]},
+  {id:'akashic', cat:'mind', label:'アカシックレコード', en:'AKASHIC', x:.42,y:.76,r:22,color:'#c4b5fd',
+   desc:'宇宙のすべての出来事、思考、感情が記録されている非物質的な次元の図書館。高次意識状態でアクセスでき、過去・現在・未来の情報を得られるとされる。',
+   score:58, verdict:'テオゾフィー、スタイナーが体系化した概念。現代のゼロポイント場理論とも共鳴。',
+   tags:['集合的無意識','ユング','霊的アクセス','ゼロポイント場'],
+   fishbone:[
+     {q:'アカシックとは何語か？',a:'サンスクリット語の「アーカーシャ（虚空・エーテル）」に由来。ヒンドゥー哲学で宇宙の第五元素とされる。',subs:['サンスクリット語の語源','ヒンドゥー五大元素','仏教の識（ヴィジュニャーナ）との比較']},
+     {q:'どうやってアクセスするか？',a:'深い瞑想状態、睡眠中の夢、退行催眠、臨死体験、エドガー・ケイシーのような霊能者によるチャネリング。',subs:['エドガー・ケイシーの15000件の読み取り','退行催眠による前世記憶','ルドルフ・シュタイナーの霊視']},
+     {q:'現代科学との接点は？',a:'量子物理学のゼロポイント場、ホログラフィック宇宙論、エルヴィン・ラズロの情報場理論がアカシックレコードの科学的基盤として引用される。',subs:['ゼロポイントエネルギーと情報','ホログラフィック宇宙の記録','DNAと情報場の相互作用']},
+   ]},
+  {id:'dmt', cat:'mind', label:'DMT次元', en:'DMT REALMS', x:.54,y:.80,r:20,color:'#ff6eb4',
+   desc:'内因性DMTが脳内で生成され、臨死体験・深い瞑想で別次元へのアクセスを可能にする。機械的なエルフ、幾何学的構造体、異次元存在との遭遇が報告される。',
+   score:66, verdict:'神経科学と神秘体験の交差点。リック・ストラスマンの研究で注目度が急上昇。',
+   tags:['内因性DMT','松果体','異次元存在','臨死体験'],
+   fishbone:[
+     {q:'内因性DMTとは何か？',a:'ジメチルトリプタミン（DMT）は人体内で自然に生成される物質。松果体での産生が仮説として提唱されているが未確認。',subs:['松果体の役割','REM睡眠中の産生仮説','臨死体験との神経化学的関係']},
+     {q:'体験の共通パターンは？',a:'「機械的エルフ」「幾何学的タイル模様」「別次元の存在との会話」「時間の消失」が世界中のDMT体験者に共通して報告される。',subs:['リック・ストラスマンの研究','600件の体験報告の分析','文化を超えた共通ビジョン']},
+     {q:'シミュレーション仮説との関係は？',a:'DMT体験は「この宇宙がシミュレーションであることを知った」という確信をもたらすことが多い。コードのような幾何学模様の知覚。',subs:['「情報としての現実」の体験','シミュレーション説への確信度','量子意識との接点']},
+   ]},
+  {id:'morphic', cat:'mind', label:'形態形成場', en:'MORPHIC FIELD', x:.27,y:.80,r:22,color:'#c4b5fd',
+   desc:'ルパート・シェルドレイクが提唱。生命体の形と行動は遺伝子だけでなく非物質的な「形態形成場」でも決まるという説。100匹目のサルの話とも関連する。',
+   score:52, verdict:'主流生物学から否定されるが、説明困難な現象（集団学習の加速等）との整合性がある。',
+   tags:['シェルドレイク','集合学習','非局所的記憶','種の記憶'],
+   fishbone:[
+     {q:'100匹目のサル効果とは？',a:'1952年に日本の宮崎県幸島で観察されたサルの行動。芋洗いの習慣が臨界数を超えると急速に広まり、離れた島のサルにも伝わったとされる。',subs:['幸島のニホンザル研究','臨界質量と情報伝達','後の研究での疑問点']},
+     {q:'形態形成場の仕組みは？',a:'過去の生命体の「記憶」が場として蓄積され、現在の生命体の発生・行動パターンに影響を与える。記憶は物質ではなく場に宿る。',subs:['結晶化速度の加速実験','ラットの迷路学習実験','世代を超えたトラウマ記憶']},
+     {q:'人間の集合意識への応用は？',a:'人類全体の意識進化も形態形成場で説明できる。一定数が新しい意識に達すると全体が変わるという進化論。',subs:['水瓶座時代の意識シフト','瞑想の集合効果（マハリシ効果）','ノエティック・サイエンスの研究']},
+   ]},
+  {id:'haarp', cat:'tech', label:'HAARP', en:'HAARP', x:.70,y:.68,r:24,color:'#ff6eb4',
+   desc:'アラスカの高周波活性オーロラ調査プログラム。電離層研究施設とされるが、人工地震・気象兵器・思考制御電磁波の発生源として使用されているという説がある。',
+   score:70, verdict:'実在する施設を基にした説。気象兵器開発の歴史的事実と重なる部分がある。',
+   tags:['気象兵器','人工地震','電離層','思考制御'],
+   fishbone:[
+     {q:'HAARPとは何か？',a:'High-frequency Active Auroral Research Programの略。アラスカ州ガコーナに設置された180基のアンテナ施設。1993年に建設開始、2014年に一時閉鎖後、アラスカ大学が管理。',subs:['施設の公式スペック','360MWの出力能力','電離層加熱実験の目的']},
+     {q:'気象兵器として使えるか？',a:'電離層を加熱することでジェット気流を変動させ、特定地域に旱魃・洪水を引き起こせるという説。EC Resolution 2000でも「気象兵器の禁止」が決議されている。',subs:['EC決議1999/A5-0284/1999','雲種まきの軍事利用','ENMOD条約（1977年）']},
+     {q:'地震兵器の証拠は？',a:'大地震の直前に電離層の異常が観測されるという研究がある。HAARPがこの電離層変動を人工的に起こせるという説。',subs:['2011東日本大震災前の電離層異常','スカラー波理論','ベンジャミン・フルフォードの主張']},
+   ]},
+  {id:'freeenergy', cat:'tech', label:'フリーエネルギー', en:'FREE ENERGY', x:.56,y:.53,r:24,color:'#ff6eb4',
+   desc:'テスラらが発明した真空エネルギー・スカラー波エネルギーを利用した無限エネルギー装置は実在するが、石油・エネルギー企業の利権により発明者が暗殺・技術が隠蔽されているという説。',
+   score:75, verdict:'テスラの実際の研究を基盤とする。エネルギー利権の現実と交差する説。',
+   tags:['ニコラ・テスラ','スカラー波','ゼロポイント','エネルギー支配'],
+   fishbone:[
+     {q:'テスラの何が隠蔽されたのか？',a:'ワーデンクリフタワー（1901-1917）はJ.P.モルガンの資金援助で建設されたが、「無料電力」の可能性に気づいたモルガンが資金を打ち切り破壊。テスラの最後の特許は死後FBI が押収。',subs:['ワーデンクリフタワーの計画','J.P.モルガンとの決裂','FBI によるテスラ文書没収（1943）']},
+     {q:'ゼロポイントエネルギーとは？',a:'量子力学的真空は完全な「無」ではなく、膨大なエネルギーが充満している。このエネルギーを取り出す技術が研究されている。',subs:['カシミール効果の実験','ゼロポイント場の計算値','NASA の極秘研究プログラム']},
+     {q:'現代の発明者への弾圧は？',a:'スタンリー・マイヤーの水燃料電池（1998年死亡、毒殺疑惑）、ユージン・マロウのモーター（特許後消息不明）など、フリーエネルギー発明者の不審死が続く。',subs:['スタンリー・マイヤーの死','特許庁による発明隠蔽の可能性','「抑圧特許」の存在']},
+   ]},
+  {id:'deepstate', cat:'history', label:'ディープステート', en:'DEEP STATE', x:.84,y:.42,r:22,color:'#ffd060',
+   desc:'民主的プロセスの外側に存在し、歴代政府・メディア・金融を支配するエリート集団。イルミナティ、フリーメーソン、ビルダーバーグ会議などが実体とされる。',
+   score:65, verdict:'一部は確認可能な事実を含む。陰謀論と政治学の境界領域。',
+   tags:['イルミナティ','新世界秩序','支配層','シャドーガバメント'],
+   fishbone:[
+     {q:'ビルダーバーグ会議とは？',a:'1954年から毎年開催される非公開会議。世界のトップ政財界人約130人が参加。議題・発言は非公開。存在自体は公式に認められている。',subs:['創設者：デニス・ヒルトン','参加者リストの公開','メディアの報道禁止慣行']},
+     {q:'イルミナティの歴史は？',a:'1776年バイエルンでアダム・ワイスハウプトが設立した秘密結社「バイエルン・イルミナティ」。1785年に禁止されるが、フリーメーソンに吸収合流したという説。',subs:['ワイスハウプトの設立目的','フリーメーソンとの合流説','ドル紙幣のピラミッド目の意味']},
+     {q:'現代の支配構造は？',a:'ロスチャイルド、ロックフェラーなどの銀行家家族、CFR（外交問題評議会）、三極委員会が実質的な世界政府として機能しているという説。',subs:['CFRのメンバーと政府要職','三極委員会の設立背景','世界銀行・IMFの支配構造']},
+     {q:'新世界秩序の計画とは？',a:'一国家・一通貨・一政府による世界統一支配計画。人口削減（「ジョージア・ガイドストーン」）、マイクロチップ管理社会の実現が目標とされる。',subs:['ジョージアガイドストーンの碑文','ID2020とデジタル監視','Great Resetアジェンダ']},
+   ]},
+];
+
+const CONNECTIONS=[
+  ['flatearth','firmament'],['flatearth','hollow'],['firmament','hollow'],
+  ['hollow','anunnaki'],['anunnaki','planet9'],['anunnaki','ancient_tech'],
+  ['tartaria','mud_flood'],['tartaria','ancient_tech'],['tartaria','freeenergy'],
+  ['katakamuna','kotodama'],['kotodama','akashic'],
+  ['simulation','multiverse'],['simulation','akashic'],['simulation','dmt'],
+  ['haarp','deepstate'],['freeenergy','deepstate'],['freeenergy','haarp'],
+  ['morphic','akashic'],['morphic','kotodama'],
+  ['dmt','akashic'],['multiverse','simulation'],
+  ['anunnaki','deepstate'],['planet9','firmament'],
+  ['ancient_tech','tartaria'],['deepstate','haarp'],
+];
+
+// ════════════════════════════════
+// CANVAS BG
+// ════════════════════════════════
+const bg=document.getElementById('bg'),bgCtx=bg.getContext('2d');
+const mp=document.getElementById('map'),mpCtx=mp.getContext('2d');
+let W,H,bgT=0,stars=[];
+
+function resize(){
+  W=bg.width=mp.width=window.innerWidth;
+  H=bg.height=mp.height=window.innerHeight;
+  stars=Array.from({length:180},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+.2,a:Math.random()*.7+.1,ph:Math.random()*Math.PI*2,sp:Math.random()*.015+.004}));
+}
+
+function drawBg(){
+  bgCtx.clearRect(0,0,W,H);bgT+=.006;
+  const g=bgCtx.createRadialGradient(W*.5,H*.45,0,W*.5,H*.5,Math.max(W,H)*.75);
+  g.addColorStop(0,'#06102a');g.addColorStop(.5,'#03060f');g.addColorStop(1,'#02040a');
+  bgCtx.fillStyle=g;bgCtx.fillRect(0,0,W,H);
+  [[.2,.3,220,.07],[.75,.6,270,.05],[.5,.85,180,.04]].forEach(([nx,ny,h,a])=>{
+    const ng=bgCtx.createRadialGradient(W*nx,H*ny,0,W*nx,H*ny,Math.min(W,H)*.3);
+    ng.addColorStop(0,`hsla(${h},90%,55%,${a})`);ng.addColorStop(1,'transparent');
+    bgCtx.fillStyle=ng;bgCtx.fillRect(0,0,W,H);
+  });
+  bgCtx.save();bgCtx.globalAlpha=.035;bgCtx.strokeStyle='#00d4ff';bgCtx.lineWidth=.5;
+  const gs=70;
+  for(let x=0;x<W;x+=gs){bgCtx.beginPath();bgCtx.moveTo(x,0);bgCtx.lineTo(x,H);bgCtx.stroke();}
+  for(let y=0;y<H;y+=gs){bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(W,y);bgCtx.stroke();}
+  bgCtx.restore();
+  stars.forEach(s=>{
+    const tw=.35+.65*Math.sin(bgT/s.sp*s.sp*8+s.ph);
+    bgCtx.beginPath();bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    bgCtx.fillStyle=`rgba(200,220,255,${s.a*tw})`;bgCtx.fill();
+  });
+}
+
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+let activeFilter='all',selectedNode=null,hoveredNode=null;
+let dragging=false,dragStart={x:0,y:0},viewOffset={x:0,y:0},lastOffset={x:0,y:0};
+let mapT=0;
+
+function nodePos(n){return{x:n.x*W+viewOffset.x,y:n.y*H+viewOffset.y};}
+function visible(){return activeFilter==='all'?THEORIES:THEORIES.filter(n=>n.cat===activeFilter);}
+
+// ════════════════════════════════
+// DRAW MAP
+// ════════════════════════════════
+function drawMap(){
+  mpCtx.clearRect(0,0,W,H);mapT+=.008;
+  const vis=new Set(visible().map(n=>n.id));
+  CONNECTIONS.forEach(([a,b])=>{
+    if(!vis.has(a)||!vis.has(b))return;
+    const na=THEORIES.find(n=>n.id===a),nb=THEORIES.find(n=>n.id===b);
+    const pa=nodePos(na),pb=nodePos(nb);
+    mpCtx.save();mpCtx.globalAlpha=.15;
+    const lg=mpCtx.createLinearGradient(pa.x,pa.y,pb.x,pb.y);
+    lg.addColorStop(0,na.color);lg.addColorStop(1,nb.color);
+    mpCtx.strokeStyle=lg;mpCtx.lineWidth=.8;
+    mpCtx.setLineDash([4,8]);mpCtx.lineDashOffset=-mapT*20;
+    mpCtx.beginPath();mpCtx.moveTo(pa.x,pa.y);mpCtx.lineTo(pb.x,pb.y);mpCtx.stroke();
+    mpCtx.restore();
+  });
+  visible().forEach(node=>{
+    const {x,y}=nodePos(node);
+    const isH=hoveredNode===node,isS=selectedNode===node;
+    const pulse=Math.sin(mapT*2+node.x*10)*.15+.85;
+    const R=node.r*(isH?1.18:isS?1.12:pulse);
+    mpCtx.save();mpCtx.translate(x,y);
+    const glow=mpCtx.createRadialGradient(0,0,R*.5,0,0,R*2.5);
+    glow.addColorStop(0,node.color+'44');glow.addColorStop(1,'transparent');
+    mpCtx.globalAlpha=isH?.7:.4;mpCtx.fillStyle=glow;
+    mpCtx.beginPath();mpCtx.arc(0,0,R*2.5,0,Math.PI*2);mpCtx.fill();
+    if(isS){
+      mpCtx.globalAlpha=.9;mpCtx.strokeStyle=node.color;mpCtx.lineWidth=2;
+      mpCtx.setLineDash([6,4]);mpCtx.lineDashOffset=-mapT*30;
+      mpCtx.beginPath();mpCtx.arc(0,0,R+8,0,Math.PI*2);mpCtx.stroke();mpCtx.setLineDash([]);
+    }
+    mpCtx.globalAlpha=1;
+    const cg=mpCtx.createRadialGradient(-R*.3,-R*.3,0,0,0,R);
+    cg.addColorStop(0,'#ffffff22');cg.addColorStop(.4,node.color+'55');cg.addColorStop(1,node.color+'18');
+    mpCtx.fillStyle=cg;mpCtx.beginPath();mpCtx.arc(0,0,R,0,Math.PI*2);mpCtx.fill();
+    mpCtx.strokeStyle=node.color;mpCtx.lineWidth=isH||isS?2:1;mpCtx.globalAlpha=isH?1:.7;mpCtx.stroke();
+    mpCtx.globalAlpha=1;mpCtx.fillStyle='#f0f4ff';
+    mpCtx.font=`bold ${Math.round(node.r*.38)}px serif`;
+    mpCtx.textAlign='center';mpCtx.textBaseline='middle';
+    const lbl=node.label;
+    const lines=lbl.length>6?[lbl.slice(0,Math.ceil(lbl.length/2)),lbl.slice(Math.ceil(lbl.length/2))]:[lbl];
+    lines.forEach((ln,i)=>{
+      const off=lines.length>1?(i-.5)*node.r*.38:0;
+      mpCtx.fillText(ln,0,off);
+    });
+    mpCtx.restore();
+  });
+}
+
+// ════════════════════════════════
+// INTERACTION
+// ════════════════════════════════
+function getNodeAt(mx,my){
+  return visible().find(n=>{const p=nodePos(n);const dx=mx-p.x,dy=my-p.y;return Math.sqrt(dx*dx+dy*dy)<=n.r*1.4;});
+}
+
+const tip=document.getElementById('tip');
+mp.addEventListener('mousemove',e=>{
+  if(dragging){viewOffset.x=lastOffset.x+(e.clientX-dragStart.x);viewOffset.y=lastOffset.y+(e.clientY-dragStart.y);return;}
+  const n=getNodeAt(e.clientX,e.clientY);hoveredNode=n;mp.style.cursor=n?'pointer':'crosshair';
+  if(n){tip.style.opacity='1';tip.style.left=(e.clientX+14)+'px';tip.style.top=(e.clientY-10)+'px';tip.innerHTML=`<span style="color:${n.color}">${n.en}</span> — ${n.label}`;}
+  else tip.style.opacity='0';
+});
+mp.addEventListener('mousedown',e=>{dragging=true;dragStart={x:e.clientX,y:e.clientY};lastOffset={...viewOffset};});
+mp.addEventListener('mouseup',e=>{
+  const moved=Math.abs(e.clientX-dragStart.x)+Math.abs(e.clientY-dragStart.y);
+  dragging=false;
+  if(moved<5){const n=getNodeAt(e.clientX,e.clientY);if(n)openPanel(n);}
+});
+mp.addEventListener('mouseleave',()=>{hoveredNode=null;tip.style.opacity='0';dragging=false;});
+mp.addEventListener('touchstart',e=>{const t=e.touches[0];dragging=true;dragStart={x:t.clientX,y:t.clientY};lastOffset={...viewOffset};},{passive:true});
+mp.addEventListener('touchmove',e=>{const t=e.touches[0];viewOffset.x=lastOffset.x+(t.clientX-dragStart.x);viewOffset.y=lastOffset.y+(t.clientY-dragStart.y);},{passive:true});
+mp.addEventListener('touchend',e=>{
+  const t=e.changedTouches[0];
+  const moved=Math.abs(t.clientX-dragStart.x)+Math.abs(t.clientY-dragStart.y);
+  dragging=false;if(moved<12){const n=getNodeAt(t.clientX,t.clientY);if(n)openPanel(n);}
+});
+
+// ════════════════════════════════
+// FILTERS
+// ════════════════════════════════
+document.querySelectorAll('.fb[data-c]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.fb[data-c]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');activeFilter=btn.dataset.c;updateCount();
+  });
+});
+function updateCount(){document.getElementById('nc').textContent=visible().length+' THEORIES';}
+
+// ════════════════════════════════
+// PANEL
+// ════════════════════════════════
+const CAT={cosmos:'🌌 宇宙',earth:'🌍 地球',history:'🏛️ 歴史',mind:'🧠 意識',tech:'⚡ テクノロジー'};
+
+function openPanel(node){
+  selectedNode=node;
+  document.getElementById('pcat').textContent=CAT[node.cat]||'';
+  document.getElementById('pcat').style.color=node.color;
+  document.getElementById('ptitle').textContent=node.label;
+  document.getElementById('pdesc').textContent=node.desc;
+
+  // FRINGE INDEX
+  const sc=document.getElementById('vscore');
+  const vt=document.getElementById('vtext');
+  let n=0;const tick=setInterval(()=>{n=Math.min(n+2,node.score);sc.innerHTML=`${n}<span>/100</span>`;if(n>=node.score)clearInterval(tick);},18);
+  sc.style.color=node.score>=75?'#ffd060':node.score>=55?'#7dd3fc':'#c4b5fd';
+  vt.textContent=node.verdict;vt.style.color='#e0eeff';
+
+  // FISHBONE
+  const tree=document.getElementById('fb-tree');
+  tree.innerHTML='';
+  (node.fishbone||[]).forEach((branch,i)=>{
+    const nodeEl=document.createElement('div');
+    nodeEl.className='fb-node';
+    nodeEl.innerHTML=`<span class="fb-arrow">▶</span><span class="fb-node-text">${branch.q}</span><span class="fb-node-tag">Q${i+1}</span>`;
+    const children=document.createElement('div');
+    children.className='fb-children';
+    children.innerHTML=`<div class="fb-child" style="color:#e0eeff;border-color:rgba(0,212,255,.15);background:rgba(0,212,255,.03);cursor:default;">${branch.a}</div>`;
+    (branch.subs||[]).forEach(sub=>{
+      const gc=document.createElement('div');gc.className='fb-grandchild';gc.textContent='◈ '+sub;
+      gc.onclick=()=>{
+        const related=THEORIES.find(t=>t.label===sub||t.en.toLowerCase()===sub.toLowerCase());
+        if(related){closePanel();setTimeout(()=>openPanel(related),300);}
+      };
+      children.appendChild(gc);
+    });
+    nodeEl.onclick=()=>{nodeEl.classList.toggle('expanded');children.classList.toggle('open');};
+    tree.appendChild(nodeEl);tree.appendChild(children);
+  });
+
+  // TAGS
+  const tagsEl=document.getElementById('ptags');
+  tagsEl.innerHTML=(node.tags||[]).map(t=>`<span class="ptag"># ${t}</span>`).join('');
+
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('hint').style.opacity='0';
+}
+
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  selectedNode=null;
+  setTimeout(()=>document.getElementById('hint').style.opacity='1',600);
+}
+
+// ════════════════════════════════
+// SHARE
+// ════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function shareImage(){
+  if(!selectedNode){showToast('理論を選択してください');return;}
+  const n=selectedNode;
+  const c=document.getElementById('share-canvas');
+  c.width=800;c.height=450;c.style.display='none';
+  const ctx=c.getContext('2d');
+  // BG
+  const g=ctx.createLinearGradient(0,0,800,450);g.addColorStop(0,'#02040a');g.addColorStop(1,'#060c20');
+  ctx.fillStyle=g;ctx.fillRect(0,0,800,450);
+  // Border
+  ctx.strokeStyle=n.color;ctx.lineWidth=2;ctx.strokeRect(12,12,776,426);
+  // Logo
+  ctx.font='bold 13px monospace';ctx.fillStyle='#7dd3fc';ctx.textAlign='left';
+  ctx.fillText('INFINITY ∞ WORLD — FRINGE THEORY MAP',30,42);
+  // Score bar
+  const sw=Math.round((n.score/100)*740);
+  ctx.fillStyle='rgba(255,255,255,.06)';ctx.fillRect(30,60,740,6);
+  ctx.fillStyle=n.color;ctx.fillRect(30,60,sw,6);
+  // Title
+  ctx.font='bold 52px serif';ctx.fillStyle=n.color;ctx.textAlign='center';
+  ctx.fillText(n.label,400,130);
+  // EN
+  ctx.font='14px monospace';ctx.fillStyle='#7dd3fc';ctx.fillText(n.en,400,155);
+  // Score
+  ctx.font='bold 48px monospace';ctx.fillStyle='#ffd060';ctx.fillText(n.score,400,220);
+  ctx.font='16px monospace';ctx.fillStyle='#7dd3fc';ctx.fillText('FRINGE INDEX / 100',400,245);
+  // Desc
+  ctx.font='15px serif';ctx.fillStyle='#e0eeff';ctx.textAlign='left';
+  const words=n.desc.split('');let line='',y=290;
+  words.forEach(ch=>{
+    line+=ch;
+    if(line.length>=46){ctx.fillText(line,30,y);line='';y+=26;}
+  });
+  if(line)ctx.fillText(line,30,y);
+  // Tags
+  ctx.font='11px monospace';ctx.fillStyle=n.color;ctx.textAlign='left';
+  ctx.fillText((n.tags||[]).map(t=>'#'+t).join('  '),30,420);
+  // URL
+  ctx.font='11px monospace';ctx.fillStyle='#2a3a6a';ctx.textAlign='right';
+  ctx.fillText('@miya — miya-max369.github.io/infinity-world/',770,420);
+
+  const a=document.createElement('a');
+  a.href=c.toDataURL('image/png');
+  a.download=`infinity_world_${n.id}.png`;
+  a.click();
+  showToast('📷 画像を保存しました');
+}
+
+function shareMessage(){
+  if(!selectedNode){showToast('理論を選択してください');return;}
+  const n=selectedNode;
+  const text=`【${n.label}】フリンジ指数: ${n.score}/100\n\n${n.desc.slice(0,80)}...\n\n#INFINITYWORLD #フリンジ理論 #${n.tags[0]}\n\nhttps://miya-max369.github.io/infinity-world/`;
+  if(navigator.share){navigator.share({title:`INFINITY ∞ WORLD — ${n.label}`,text:text,url:'https://miya-max369.github.io/infinity-world/'}).catch(()=>{});}
+  else{navigator.clipboard.writeText(text).then(()=>showToast('💬 テキストをコピーしました'));}
+}
+
+function copyLink(){
+  const url=selectedNode?`https://miya-max369.github.io/infinity-world/#${selectedNode.id}`:'https://miya-max369.github.io/infinity-world/';
+  navigator.clipboard.writeText(url).then(()=>showToast('🔗 リンクをコピーしました'));
+}
+
+// ════════════════════════════════
+// LOOP
+// ════════════════════════════════
+function loop(){drawBg();drawMap();requestAnimationFrame(loop);}
+window.addEventListener('resize',resize);
+resize();updateCount();loop();
+</script>
+</body>
+</html>
